@@ -1,13 +1,139 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoLens - Track environmental promises. Detect reality gaps.</title>
+<meta name="description" content="EcoLens verifies the evidence behind environmental pledges and warns early when projects will miss their promises.">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext y='19' font-size='19'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<nav>
+  <div class="ep-wrap nav-inner">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#14532d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+      EcoLens
+    </a>
+    <button class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+    <div class="nav-links">
+      <a href="index.html" class="active">Home</a>
+      <a href="problem.html">Problem</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="ai-checks.html">AI checks</a>
+      <a href="live-demo.html">Live demo</a>
+      <a href="try-it.html">Try it</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+<header class="hero" id="top">
+  <div class="ep-wrap hero-grid">
+    <div>
+      <span class="kicker">AI for environmental accountability</span>
+      <h1>Track environmental promises. <em>Detect reality gaps.</em></h1>
+      <p class="sub">Organizations promise to plant trees, restore mangroves and cut waste. EcoLens verifies the evidence behind every progress report, scores it with a confidence level, and warns early when a project will miss its promise.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="live-demo.html">View Live Demo</a>
+        <a class="btn btn-ghost" href="how-it-works.html">How It Works</a>
+      </div>
+    </div>
+    <div class="mini-card" aria-label="Example project snapshot">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <h3 style="margin:0;">Vanamitra Reforestation</h3>
+        <span class="ep-status bad">OFF TRACK</span>
+      </div>
+      <div class="org">Promise: 10,000 trees in 12 months · Month 9 of 12</div>
+      <div class="mini-row"><span>Promise target</span><strong>10,000 trees</strong></div>
+      <div class="mini-row"><span>Verified progress</span><strong>4,000 trees</strong></div>
+      <div class="mini-row"><span>Expected progress</span><strong>7,500 trees</strong></div>
+      <div class="mini-row"><span>Reality gap</span><strong style="color:var(--red-600);">&minus;3,500 trees</strong></div>
+      <div class="mini-row"><span>Forecast at deadline</span><strong>~5,331 trees</strong></div>
+      <div class="mini-row"><span>Trust / Confidence score</span><strong>92% (Month 7 flagged)</strong></div>
+      <div class="mini-gap">⚠ Reality gap detected: Projected shortfall of ~4,669 trees against the promise.</div>
+    </div>
+  </div>
+</header>
+
+<section class="journey-section">
+  <div class="ep-wrap">
+    <span class="kicker">Explore EcoLens</span>
+    <h2>Explore the Platform</h2>
+    <p class="sub">A complete transparency pipeline from registered pledge to automated verification and early warning.</p>
+    <div class="journey-grid">
+      <a class="journey-card" href="problem.html">
+        <span class="journey-badge">1. The Problem</span>
+        <h3>Promises vs Evidence</h3>
+        <p>Thousands of environmental pledges are made, but almost nobody checks the evidence until it's too late.</p>
+        <span class="journey-link">Read the problem &rarr;</span>
+      </a>
+      <a class="journey-card" href="how-it-works.html">
+        <span class="journey-badge">2. How It Works</span>
+        <h3>Accountability Pipeline</h3>
+        <p>A 5-step pipeline from registered promise to verification and early deadline reality gap warnings.</p>
+        <span class="journey-link">See the pipeline &rarr;</span>
+      </a>
+      <a class="journey-card" href="ai-checks.html">
+        <span class="journey-badge">3. AI Checks</span>
+        <h3>Verification Engine</h3>
+        <p>6 multi-layered verification checks analyzing photos, locations, and historical growth patterns.</p>
+        <span class="journey-link">Explore the checks &rarr;</span>
+      </a>
+      <a class="journey-card" href="live-demo.html">
+        <span class="journey-badge">4. Live Demo</span>
+        <h3>Interactive Dashboard</h3>
+        <p>Explore three sample pledges with expected vs. actual trajectory charts and audit feeds.</p>
+        <span class="journey-link">Open live demo &rarr;</span>
+      </a>
+      <a class="journey-card" href="try-it.html">
+        <span class="journey-badge">5. Try It Yourself</span>
+        <h3>Duplicate Photo Detector</h3>
+        <p>Test the duplicate detection workflow using sample images or upload an evidence photo.</p>
+        <span class="journey-link">Try the tool &rarr;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="honesty" id="about">
+  <div class="ep-wrap">
+    <span class="kicker">Honest limits</span>
+    <h2>Evidence-based insights, not absolute proof</h2>
+    <p class="sub" style="max-width:760px; margin-bottom:0; font-size:1.02rem; line-height:1.65;">
+      EcoLens provides evidence-based verification and confidence insights, but does not replace field audits, local communities, or human verification. Our goal is to bring transparency, consistency, and early warning reality gap detection to environmental commitments.
+    </p>
+  </div>
+</section>
+
+<section class="vision">
+  <div class="ep-wrap">
+    <span class="kicker">Vision</span>
+    <h2>A trust layer for environmental pledges</h2>
+    <p style="font-size:1.05rem; line-height:1.6;">EcoLens aims to make environmental commitments more transparent, measurable, and accountable through evidence-based verification.</p>
+    <div class="sdg-row">
+      <span class="sdg">SDG 13 &ndash; Climate Action</span>
+      <span class="sdg">SDG 14 &ndash; Life Below Water</span>
+      <span class="sdg">SDG 15 &ndash; Life on Land</span>
+      <span class="sdg">SDG 12 &ndash; Responsible Consumption</span>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="ep-wrap">
+    <span>&copy; 2026 EcoLens. Track environmental promises. Detect reality gaps.</span>
+  </div>
+</footer>
+
+<script src="js/nav.js"></script>
+</body>
 </html>

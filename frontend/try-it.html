@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Try It - EcoLens</title>
+<meta name="description" content="Catch a recycled photo live: compute perceptual image hashes directly in your browser and detect duplicate evidence.">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext y='19' font-size='19'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<nav>
+  <div class="ep-wrap nav-inner">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#14532d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+      EcoLens
+    </a>
+    <button class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="problem.html">Problem</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="ai-checks.html">AI checks</a>
+      <a href="live-demo.html">Live demo</a>
+      <a href="try-it.html" class="active">Try it</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section id="try">
+    <div class="ep-wrap">
+      <span class="kicker">Try it yourself</span>
+      <h2>Test Duplicate Photo Detection</h2>
+      <p class="sub">Test the EcoLens evidence verification workflow using sample images or upload an image to explore the verification interface.</p>
+      <div class="try-card">
+        <div class="try-row" id="ep-try-demo">
+          <button class="btn btn-primary" data-photo="assets/img/tree-03.jpg" data-label="Recycled Photo">Use Recycled Photo</button>
+          <button class="btn btn-ghost" data-photo="assets/img/fresh-sample.jpg" data-label="Fresh Photo">Use Fresh Photo</button>
+        </div>
+
+        <div class="ep-dropzone" id="ep-dropzone" style="margin-top:16px;">
+          <svg class="ep-dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <p>Drag & drop evidence photo here or <strong>browse files</strong></p>
+          <div class="ep-dropzone-hint">Supports JPEG, PNG, WebP, GIF (max 10 MB)</div>
+          <input type="file" id="ep-try-file" accept="image/jpeg,image/png,image/webp,image/gif">
+        </div>
+
+        <div id="ep-upload-error"></div>
+        <div id="ep-upload-preview"></div>
+        <div id="ep-try-actions" style="display:none; margin-top:14px;">
+          <button class="btn btn-primary" id="ep-btn-analyze">Analyze Evidence</button>
+        </div>
+        <div id="ep-try-out"><p class="ep-try-pending">Select a sample photo above or upload an evidence photo to begin verification.</p></div>
+      </div>
+
+      <div class="page-cta-banner">
+        <div>
+          <h3>Explore the Full Live Demo Dashboard</h3>
+          <p>See how evidence verification, GPS cross-checks, and reality gap forecasts protect pledge integrity.</p>
+        </div>
+        <div class="page-cta-actions">
+          <a class="btn btn-primary" href="live-demo.html">Open Live Demo &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="ep-wrap">
+    <span>&copy; 2026 EcoLens. Track environmental promises. Detect reality gaps.</span>
+  </div>
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/data.js"></script>
+<script src="js/api.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/nav.js"></script>
+</body>
+</html>

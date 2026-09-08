@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Checks - EcoLens</title>
+<meta name="description" content="Every update is interrogated, not trusted. Six checks run on each progress report, client-side in your browser.">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext y='19' font-size='19'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<nav>
+  <div class="ep-wrap nav-inner">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#14532d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+      EcoLens
+    </a>
+    <button class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="problem.html">Problem</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="ai-checks.html" class="active">AI checks</a>
+      <a href="live-demo.html">Live demo</a>
+      <a href="try-it.html">Try it</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section id="checks">
+    <div class="ep-wrap">
+      <span class="kicker">The AI checks</span>
+      <h2>Every update is interrogated, not trusted</h2>
+      <p class="sub">EcoLens applies multiple verification checks to submitted evidence to identify inconsistencies and improve confidence in reported environmental progress.</p>
+      <div class="checks-grid">
+        <div class="check-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+          <h3>Photo relevance</h3>
+          <p>Image analysis evaluates whether a submitted photo appears relevant to the environmental project and its reported activity.</p>
+        </div>
+        <div class="check-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <h3>Duplicate detection</h3>
+          <p>Detects potentially reused or duplicate images by comparing submitted evidence with previous project records.</p>
+        </div>
+        <div class="check-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <h3>GPS cross-check</h3>
+          <p>Compares submitted location information with the registered project area to identify possible location mismatches.</p>
+        </div>
+        <div class="check-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
+          <h3>Growth plausibility</h3>
+          <p>Analyzes reported progress against historical trends to identify unusually large or unrealistic changes.</p>
+        </div>
+        <div class="check-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          <h3>Anomaly detection</h3>
+          <p>Detects unusual patterns, sudden jumps, or unexpected stalls across project updates.</p>
+        </div>
+        <div class="check-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
+          <h3>Confidence score</h3>
+          <p>Combines verification results into a confidence score that indicates how strongly the submitted evidence supports the reported progress.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="honesty" id="about">
+    <div class="ep-wrap">
+      <span class="kicker">Honest limits</span>
+      <h2>What AI can and cannot prove here</h2>
+      <p class="sub">The goal of EcoLens is transparency and auditability, not proof. We say that on the page, on purpose.</p>
+      <div class="honesty-grid">
+        <div class="honesty-col honesty-can">
+          <h3>✅ It can</h3>
+          <ul>
+            <li>Catch photos that were recycled from earlier updates or other projects.</li>
+            <li>Catch growth claims that are implausible against the project's own history.</li>
+            <li>Check that submissions come from the promised location.</li>
+            <li>Attach an honest confidence level to every report.</li>
+            <li>Warn months in advance when the verified trend will miss the promise.</li>
+          </ul>
+        </div>
+        <div class="honesty-col honesty-cant">
+          <h3>🚫 It cannot</h3>
+          <ul>
+            <li>Prove a photo was taken on the date claimed (no trusted camera signal).</li>
+            <li>Confirm planted trees survived without periodic field audits.</li>
+            <li>Stop a determined fraudster who submits many genuine photos slowly.</li>
+            <li>Replace on-ground verification by auditors and local communities.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="page-cta-banner">
+        <div>
+          <h3>See these 6 AI checks in action</h3>
+          <p>Explore real-time scoring, confidence gauges, and reality gap forecasting on seeded project data.</p>
+        </div>
+        <div class="page-cta-actions">
+          <a class="btn btn-primary" href="live-demo.html">Open Live Demo &rarr;</a>
+          <a class="btn btn-ghost" href="try-it.html">Try Duplicate Detector &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="ep-wrap">
+    <span>&copy; 2026 EcoLens. Track environmental promises. Detect reality gaps.</span>
+  </div>
+</footer>
+
+<script src="js/nav.js"></script>
+</body>
+</html>

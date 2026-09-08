@@ -1,0 +1,27 @@
+# Photo attributions
+
+All photos are from Wikimedia Commons under the license listed on each source page.
+Files are listed with their most recent source; some replaced earlier picks from the same searches.
+
+- `assets/img/fresh-sample.jpg` - File:A photo of a group of trees with a retirement home on the background, in Amsterdam city; high resolution image by FotoDutch in June 2013.jpg by Fons Heijnsbroek, CC0. https://commons.wikimedia.org/wiki/File:A_photo_of_a_group_of_trees_with_a_retirement_home_on_the_background,_in_Amsterdam_city;_high_resolution_image_by_FotoDutch_in_June_2013.jpg (never-submitted sample for the try widget)
+- `assets/img/mangrove-01.jpg` — File:KARS Park Shoreline Restoration (KSC-20220804-PH-FMX01 0002).jpeg by Frank Michaux, Public domain. https://commons.wikimedia.org/wiki/File:KARS_Park_Shoreline_Restoration_(KSC-20220804-PH-FMX01_0002).jpeg (960x640)
+- `assets/img/mangrove-02.jpg` - File:Baby red mangrove (Rhizophora mangle).jpg by Bob Peterson, CC BY 2.0. https://commons.wikimedia.org/wiki/File:Baby_red_mangrove_(Rhizophora_mangle).jpg (veg 15%)
+- `assets/img/mangrove-03.jpg` — File:KARS Park Shoreline Restoration (KSC-20220804-PH-FMX01 0075).jpeg by Frank Michaux, Public domain. https://commons.wikimedia.org/wiki/File:KARS_Park_Shoreline_Restoration_(KSC-20220804-PH-FMX01_0075).jpeg (960x640)
+- `assets/img/mangrove-04.jpg` - File:Bangkok’s green lung (40468870113) (cropped).jpg by European Space Agency, CC BY-SA 2.0. https://commons.wikimedia.org/wiki/File:Bangkok%E2%80%99s_green_lung_(40468870113)_(cropped).jpg (veg 27%)
+- `assets/img/mangrove-05.jpg` - File:Mangrove Arch Boat Ashtamudi Kollam Kerala Mar22 A7C 01490.jpg by This Photo was taken by Timothy A. Gonsalves.  Feel free to use my photos, but please mention me as the author.  I would much appreciate if you send me an email tagooty@yahoo.com or write on my talk page, for my information.  Please contact me before commercial use.
+- `assets/img/mangrove-06.jpg` - File:-TravelTuesday with My Public Lands - 25447248812.jpg by mypubliclands, CC BY 2.0. https://commons.wikimedia.org/wiki/File:-TravelTuesday_with_My_Public_Lands_-_25447248812.jpg (veg 70%)
+- `assets/img/mangrove-07.jpg` - File:Hutan Mangrove Sumatera.jpg by M. Wildan Faris, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Hutan_Mangrove_Sumatera.jpg (veg 38%)
+- `assets/img/tree-01.jpg` — File:Blue Grass Chemical Agent-Destruction Pilot Plant Reforest the Bluegrass (34253484162).jpg by PEO ACWA, CC BY 2.0. https://commons.wikimedia.org/wiki/File:Blue_Grass_Chemical_Agent-Destruction_Pilot_Plant_Reforest_the_Bluegrass_(34253484162).jpg (960x638)
+- `assets/img/tree-02.jpg` - File:Berdorf (LU), Aesbachtal -- 2015 -- 4550.jpg by Dietmar Rabich, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Berdorf_(LU),_Aesbachtal_--_2015_--_4550.jpg (veg 50%)
+- `assets/img/tree-03.jpg` - File:Acacia caffra, habitus, Skeerpoort, a.jpg by JMK, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:Acacia_caffra,_habitus,_Skeerpoort,_a.jpg (veg 15%)
+- `assets/img/tree-04.jpg` - File:AufBuchen planting Schlachtensee Berlin 01 Dec 2024 banner with forest behind.jpg by RobbieIanMorrison, CC BY 4.0. https://commons.wikimedia.org/wiki/File:AufBuchen_planting_Schlachtensee_Berlin_01_Dec_2024_banner_with_forest_behind.jpg (veg 95%)
+- `assets/img/tree-05.jpg` - File:A path to lead.jpg by Arushi Dayal, CC BY-SA 4.0. https://commons.wikimedia.org/wiki/File:A_path_to_lead.jpg (veg 17%)
+- `assets/img/tree-06.jpg` - File:Tree seedlings in a local nursery, Irawo, Atisbo, Oyo State, Nigeria.jpg by NigerianScribe, CC0. https://commons.wikimedia.org/wiki/File:Tree_seedlings_in_a_local_nursery,_Irawo,_Atisbo,_Oyo_State,_Nigeria.jpg (veg 61%)
+- `assets/img/tree-08.jpg` — File:Haywood Community College student places a spruce tree (10344333896).jpg by U.S. Fish and Wildlife Service Southeast Region, Public domain. https://commons.wikimedia.org/wiki/File:Haywood_Community_College_student_places_a_spruce_tree_(10344333896).jpg (960x640)
+- `assets/img/tree-09.jpg` — File:Haywood Community College students planting spruce trees (10344313474).jpg by U.S. Fish and Wildlife Service Southeast Region, Public domain. https://commons.wikimedia.org/wiki/File:Haywood_Community_College_students_planting_spruce_trees_(10344313474).jpg (960x1440)
+- `assets/img/waste-01.jpg` — File:Paper To Paper Bin.jpg by My Alchemist, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Paper_To_Paper_Bin.jpg (960x720)
+- `assets/img/waste-02.jpg` — File:"Contaminated" Recycling bin.jpg by Alan Stanton, CC BY-SA 2.0. https://commons.wikimedia.org/wiki/File:%22Contaminated%22_Recycling_bin.jpg
+- `assets/img/waste-03.jpg` — File:Biffa plastic bottle recycling dumpster bins, Cinderford, Gloustershire, March 1st 2015.jpg by Jaggery, CC BY-SA 2.0. https://commons.wikimedia.org/wiki/File:Biffa_plastic_bottle_recycling_dumpster_bins,_Cinderford,_Gloustershire,_March_1st_2015.jpg
+- `assets/img/waste-04.jpg` — File:Bottles recycling bin.JPG by דוד שי, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Bottles_recycling_bin.JPG
+- `assets/img/waste-05.jpg` — File:Colorful Recycling Containers for Trash.jpg by epSos .de, CC BY 2.0. https://commons.wikimedia.org/wiki/File:Colorful_Recycling_Containers_for_Trash.jpg
+- `assets/img/waste-06.jpg` — File:Dunedin City recycling bins, New Zealand, March 2011.JPG by Lcmortensen, CC BY-SA 3.0. https://commons.wikimedia.org/wiki/File:Dunedin_City_recycling_bins,_New_Zealand,_March_2011.JPG
