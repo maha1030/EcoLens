@@ -12,7 +12,7 @@ evidence_db = [] # In-memory database (or link to your team's database.py)
 # USER 1: Environmental Org Uploads Evidence
 @router.post("/upload")
 async def upload_evidence(
-    project_id: str = Form(...),
+    project_id: int = Form(...),
     org_user_id: str = Form(...),
     project_lat: float = Form(...),
     project_lon: float = Form(...),
@@ -46,6 +46,6 @@ async def upload_evidence(
 
 # USER 2: Company Fetches Evidence
 @router.get("/project/{project_id}")
-async def get_project_evidence(project_id: str):
+async def get_project_evidence(project_id: int):
     records = [e for e in evidence_db if e["project_id"] == project_id]
     return {"project_id": project_id, "evidence": records}
