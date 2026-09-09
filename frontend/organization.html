@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organization Dashboard - EcoLens</title>
+<meta name="description" content="Manage your environmental commitments, monitor verified progress, and submit evidence updates.">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext y='19' font-size='19'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<nav>
+  <div class="ep-wrap nav-inner">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#14532d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+      EcoLens
+    </a>
+    <button class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="problem.html">Problem</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="ai-checks.html">AI checks</a>
+      <a href="live-demo.html">Live demo</a>
+      <a href="organization.html" class="active">Organizations</a>
+      <a href="company.html">Companies</a>
+      <a href="try-it.html">Try it</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section id="org-dashboard">
+    <div class="ep-wrap">
+      <span class="kicker">Environmental Organization</span>
+      <h2>Environmental Organization</h2>
+      <p class="sub">Manage your environmental projects and submit progress evidence for EcoLens analysis.</p>
+
+      <!-- Summary Cards -->
+      <div class="stats-bar" id="org-summary-stats">
+        <!-- Injected via organization.js -->
+        <div class="stat-tile"><div class="stat-tile-num">3</div><div class="stat-tile-label">Active Projects</div></div>
+        <div class="stat-tile"><div class="stat-tile-num">2</div><div class="stat-tile-label">Projects On Track</div></div>
+        <div class="stat-tile"><div class="stat-tile-num warn">1</div><div class="stat-tile-label">Projects At Risk</div></div>
+        <div class="stat-tile"><div class="stat-tile-num">22</div><div class="stat-tile-label">Evidence Submitted</div></div>
+      </div>
+
+      <!-- Primary Actions & Organization Lifecycle Banner -->
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px; margin: 28px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; box-shadow:var(--shadow);">
+        <div>
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; font-weight:700; color:var(--ink-faint); margin-bottom:6px;">Organization Flow</div>
+          <div class="org-workflow-steps" style="display:flex; align-items:center; flex-wrap:wrap; gap:6px; font-size:0.82rem; font-weight:600; color:var(--ink);">
+            <span style="color:var(--green-900); background:var(--green-100); padding:3px 8px; border-radius:4px;">Project</span>
+            <span style="color:var(--ink-faint);">&rarr;</span>
+            <span style="color:var(--green-900); background:var(--green-100); padding:3px 8px; border-radius:4px;">Target</span>
+            <span style="color:var(--ink-faint);">&rarr;</span>
+            <span style="color:var(--green-900); background:var(--green-100); padding:3px 8px; border-radius:4px;">Timeline</span>
+            <span style="color:var(--ink-faint);">&rarr;</span>
+            <span style="color:var(--green-900); background:var(--green-100); padding:3px 8px; border-radius:4px;">Location</span>
+            <span style="color:var(--ink-faint);">&rarr;</span>
+            <span style="color:var(--green-900); background:var(--green-100); padding:3px 8px; border-radius:4px;">Progress</span>
+            <span style="color:var(--ink-faint);">&rarr;</span>
+            <span style="color:var(--green-900); background:var(--green-100); padding:3px 8px; border-radius:4px;">Evidence</span>
+            <span style="color:var(--ink-faint);">&rarr;</span>
+            <span style="color:var(--green-900); background:var(--green-100); padding:3px 8px; border-radius:4px;">Analysis</span>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="epOpenCreateProjectModal()">+ Create New Project</button>
+          <button class="btn btn-ghost" onclick="epOpenSubmitUpdate(epSelectedOrgProjectId, false)">Submit Progress</button>
+          <button class="btn btn-ghost" onclick="epOpenSubmitUpdate(epSelectedOrgProjectId, true)">Upload Evidence</button>
+        </div>
+      </div>
+
+      <!-- Your Projects -->
+      <div style="margin-top: 32px;">
+        <span class="kicker">Portfolio</span>
+        <h3 style="font-size: 1.6rem; margin: 6px 0 16px;">Your Projects</h3>
+        <p class="sub" style="margin-bottom: 20px;">Review registered targets, progress metrics, and live verification status.</p>
+        <div class="project-card-grid" id="org-project-cards">
+          <!-- Injected via organization.js -->
+        </div>
+      </div>
+
+      <!-- Project Detail -->
+      <div id="org-project-detail" style="margin-top: 48px;">
+        <!-- Injected via organization.js -->
+      </div>
+
+      <!-- Submit New Progress Update -->
+      <div id="org-submit-update" class="org-form-card">
+        <span class="kicker">Evidence Submission</span>
+        <h3 style="font-size: 1.45rem; margin: 4px 0 8px;">Submit New Progress Update</h3>
+        <p class="sub" style="margin-bottom: 24px;">Upload verifiable field measurements, photo documentation, and GPS coordinates for automated EcoLens analysis.</p>
+
+        <div id="org-form-feedback"></div>
+
+        <form id="org-progress-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="update-project-select">Select Environmental Project</label>
+              <select id="update-project-select" class="form-control">
+                <!-- Injected via JS -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="update-progress-val">Progress Metric Claimed (trees, ha, or %)</label>
+              <input type="number" step="any" id="update-progress-val" class="form-control" placeholder="e.g. 500" required>
+            </div>
+
+            <div class="form-group">
+              <label for="update-date">Reporting Date</label>
+              <input type="date" id="update-date" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label for="update-location">Field Site / Location Coordinates</label>
+              <input type="text" id="update-location" class="form-control" placeholder="e.g. 18.754, 73.406 or Site Sector C" value="18.7544, 73.4055">
+            </div>
+
+            <div class="form-group full-width">
+              <label for="update-photo-file">Photo / Evidence Document</label>
+              <div class="ep-dropzone" style="padding: 24px;" onclick="document.getElementById('update-photo-file').click()">
+                <svg class="ep-dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <p>Click or drag evidence photo here (JPEG, PNG, WebP, GIF &bull; Max 10 MB)</p>
+                <input type="file" id="update-photo-file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
+              </div>
+              <div id="update-photo-preview"></div>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="update-notes">Field Notes &amp; Auditor Observations</label>
+              <textarea id="update-notes" class="form-control" placeholder="Add nursery details, contractor notes, seedling survival estimates, or weather conditions..."></textarea>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+            <button type="submit" class="btn btn-primary" id="org-submit-btn">Submit Update</button>
+          </div>
+        </form>
+      </div>
+
+      <p class="hero-note" style="margin-top:20px; font-size:0.82rem; color:var(--text-muted); text-align:center;">
+        * EcoLens Score is a decision-support and risk indicator, not official certification. Project evaluations are computed from submitted monitoring records.
+      </p>
+
+      <!-- Create Project Modal (Demo Mode) -->
+      <div id="org-create-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); z-index:9999; justify-content:center; align-items:center; padding:16px;">
+        <div style="background:var(--surface); border-radius:var(--radius); max-width:560px; width:100%; padding:28px; box-shadow:var(--shadow-lg); position:relative; max-height:90vh; overflow-y:auto; border:1px solid var(--line);">
+          <button type="button" onclick="epCloseCreateProjectModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--ink-soft); line-height:1;">&times;</button>
+          <span class="kicker">New Pledge Registration</span>
+          <h3 style="margin:4px 0 8px; font-size:1.35rem;">Create Environmental Project</h3>
+          <p class="sub" style="margin-bottom:18px; font-size:0.88rem;">Register pledge target, timeline, and GPS centroid for automated verification.</p>
+          
+          <form id="org-create-form" onsubmit="epSubmitCreateProject(event)">
+            <div class="form-group" style="margin-bottom:12px;">
+              <label for="new-proj-name" style="display:block; font-weight:600; font-size:0.86rem; margin-bottom:6px;">Project Name</label>
+              <input type="text" id="new-proj-name" class="form-control" placeholder="e.g. Sundarbans Delta Mangrove Restoration" required>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+              <div class="form-group">
+                <label for="new-proj-type" style="display:block; font-weight:600; font-size:0.86rem; margin-bottom:6px;">Project Type</label>
+                <select id="new-proj-type" class="form-control">
+                  <option value="Reforestation">Reforestation</option>
+                  <option value="Mangrove Restoration">Mangrove Restoration</option>
+                  <option value="Waste Reduction">Waste Reduction</option>
+                  <option value="Wetland Conservation">Wetland Conservation</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="new-proj-target" style="display:block; font-weight:600; font-size:0.86rem; margin-bottom:6px;">Target Pledge &amp; Unit</label>
+                <input type="text" id="new-proj-target" class="form-control" placeholder="e.g. 5,000 trees" required>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+              <div class="form-group">
+                <label for="new-proj-duration" style="display:block; font-weight:600; font-size:0.86rem; margin-bottom:6px;">Timeline Duration</label>
+                <input type="text" id="new-proj-duration" class="form-control" placeholder="e.g. 12 months" value="12 months" required>
+              </div>
+              <div class="form-group">
+                <label for="new-proj-location" style="display:block; font-weight:600; font-size:0.86rem; margin-bottom:6px;">Centroid Location</label>
+                <input type="text" id="new-proj-location" class="form-control" placeholder="e.g. 21.9497, 89.1833" value="21.9497, 89.1833" required>
+              </div>
+            </div>
+
+            <div style="background:var(--green-100); border:1px solid var(--green-200); padding:10px 14px; border-radius:6px; font-size:0.82rem; color:var(--green-900); margin-bottom:16px;">
+              <strong>Lifecycle:</strong> Project &rarr; Target &rarr; Timeline &rarr; Location &rarr; Progress &rarr; Evidence &rarr; Analysis
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+              <button type="button" class="btn btn-ghost" onclick="epCloseCreateProjectModal()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Project</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="ep-wrap">
+    <span>&copy; 2026 EcoLens. Track environmental promises. Detect reality gaps.</span>
+  </div>
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/data.js"></script>
+<script src="js/api.js"></script>
+<script src="js/organization.js"></script>
+<script src="js/nav.js"></script>
+</body>
+</html>

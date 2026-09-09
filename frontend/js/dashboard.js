@@ -179,6 +179,11 @@ function epRenderDetail(p) {
     <div class="ep-tile"><div class="ep-tile-num">~${epFmt(p, f.predictedFinal)}</div>
       <div class="ep-tile-label">AI forecast at the deadline</div></div>`;
 
+  const evalBtn = document.getElementById("ep-eval-cta-btn");
+  if (evalBtn) {
+    evalBtn.href = `company.html?project=${p.id}`;
+  }
+
   epRenderChart(p, p.cumVerified, p.cumClaimed, f);
   epRenderFeed(p);
 }
@@ -297,7 +302,7 @@ function epRenderFeed(p) {
   // Monthly Verification Timeline Header
   const feedHeader = document.createElement("div");
   feedHeader.style.cssText = "padding: 16px 24px 8px; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); border-top: 1px solid var(--line);";
-  feedHeader.textContent = "Monthly Verification Timeline";
+  feedHeader.textContent = "Monthly Verification Timeline (Most Recent First)";
   wrap.appendChild(feedHeader);
 
   // Show recent updates (latest 2) by default; collapse older updates
@@ -306,6 +311,7 @@ function epRenderFeed(p) {
   const olderUpdates = updates.slice(RECENT_COUNT);
 
   function createUpdateRow(u) {
+    const isLatest = updates.length > 0 && u.month === updates[0].month;
     const checks = u.checks || {};
     const chips = ["relevance", "duplicate", "gps", "plausibility"].map((k) => {
       const c = checks[k] || { status: "na", short: "n/a", detail: "N/A" };
@@ -321,14 +327,17 @@ function epRenderFeed(p) {
     }).join("");
 
     const el = document.createElement("article");
-    el.className = "ep-feed-item" + (u.confidence < 50 ? " ep-feed-flagged" : "");
+    el.className = "ep-feed-item" + (u.confidence < 50 ? " ep-feed-flagged" : "") + (isLatest ? " ep-feed-latest" : "");
     el.innerHTML = `
       <a class="ep-feed-photo" href="${u.photo}" target="_blank" rel="noopener">
         <img src="${u.photo}" alt="Evidence photo, month ${u.month}" loading="lazy">
       </a>
       <div class="ep-feed-body">
         <div class="ep-feed-head">
-          <span class="ep-feed-month">Month ${u.month} update <span class="ep-feed-date">\u00b7 ${u.date}</span></span>
+          <span class="ep-feed-month">
+            ${isLatest ? '<span class="ep-badge ep-badge-verified" style="font-size:0.72rem; padding:2px 7px; margin-right:6px; font-weight:700;">LATEST SUBMISSION</span>' : ''}
+            Month ${u.month} update <span class="ep-feed-date">\u00b7 ${u.date}</span>
+          </span>
           <span class="ep-feed-counts">claimed <strong>${epFmt(p, u.claimed)}</strong> \u00b7 counted <strong>${epFmt(p, u.verified)}</strong> ${epShortUnit(p)}</span>
         </div>
         <div class="ep-feed-chips">${chips}</div>
@@ -532,7 +541,7 @@ function epInitTry() {
                 <div class="ep-feed-detail-line"><strong>Hamming Distance:</strong> ${result.hammingDistance}/64</div>
                 <div class="ep-feed-detail-line"><strong>Perceptual Hash:</strong> <code>${result.dHash}</code></div>
               </details>
-              <div class="ep-demo-notice" style="margin-top:10px;">\u26A0 Demo mode \u2014 mock verification data</div>
+              <div class="ep-demo-notice" style="margin-top:10px;">\u26A0 Browser-based demonstration \u2014 demo analysis</div>
             </div>
           </div>
         </div>`;
@@ -621,9 +630,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       const panel = document.querySelector(".ep-panel");
       if (panel) {
         panel.innerHTML = `
-          <div class="ep-panel-head">
-            <h3 id="ep-detail-title"></h3>
-            <p id="ep-detail-site"></p>
+          <div class="ep-panel-head" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h3 id="ep-detail-title"></h3>
+              <p id="ep-detail-site"></p>
+            </div>
+            <a id="ep-eval-cta-btn" class="btn btn-primary" href="company.html?project=vanamitra" style="font-size:0.84rem; padding:8px 14px; white-space:nowrap;">Evaluate this Project &rarr;</a>
           </div>
           <div id="ep-banner" class="ep-banner"></div>
           <div id="ep-tiles"></div>

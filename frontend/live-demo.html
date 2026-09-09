@@ -29,6 +29,8 @@
       <a href="how-it-works.html">How it works</a>
       <a href="ai-checks.html">AI checks</a>
       <a href="live-demo.html" class="active">Live demo</a>
+      <a href="organization.html">Organizations</a>
+      <a href="company.html">Companies</a>
       <a href="try-it.html">Try it</a>
     </div>
   </div>
@@ -39,15 +41,18 @@
     <div class="ep-wrap">
       <span class="kicker">Live demo</span>
       <h2>Three promises. One dashboard.</h2>
-      <p class="sub">Explore how EcoLens compares reported progress, verified evidence, and expected project outcomes across multiple environmental commitments.</p>
+      <p class="sub">Explore how EcoLens evaluates environmental projects using reported progress, evidence, consistency, risk indicators, and predicted outcomes.</p>
 
       <p class="ep-loading" id="ep-loading">Loading project verification records…</p>
       <div id="ep-cards"></div>
 
       <div class="ep-panel">
-        <div class="ep-panel-head">
-          <h3 id="ep-detail-title"></h3>
-          <p id="ep-detail-site"></p>
+        <div class="ep-panel-head" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+          <div>
+            <h3 id="ep-detail-title"></h3>
+            <p id="ep-detail-site"></p>
+          </div>
+          <a id="ep-eval-cta-btn" class="btn btn-primary" href="company.html?project=vanamitra" style="font-size:0.84rem; padding:8px 14px; white-space:nowrap;">Evaluate this Project &rarr;</a>
         </div>
         <div id="ep-banner" class="ep-banner"></div>
         <div id="ep-tiles"></div>
@@ -55,6 +60,7 @@
         <div class="ep-feed" id="ep-feed"></div>
       </div>
       <p class="hero-note" style="margin-top:12px">Trust scores summarize verification confidence across project updates. Flagged or disputed evidence can reduce the verified progress calculation.</p>
+      <p class="hero-note" style="margin-top:6px; font-size:0.82rem; color:var(--text-muted);">* EcoLens Score is a decision-support and risk indicator, not official certification.</p>
 
 
     </div>

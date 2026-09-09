@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Dashboard - EcoLens</title>
+<meta name="description" content="Evaluate environmental projects using measurable progress, evidence, risk indicators, and predicted outcomes.">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext y='19' font-size='19'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<nav>
+  <div class="ep-wrap nav-inner">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#14532d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+      EcoLens
+    </a>
+    <button class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="problem.html">Problem</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="ai-checks.html">AI checks</a>
+      <a href="live-demo.html">Live demo</a>
+      <a href="organization.html">Organizations</a>
+      <a href="company.html" class="active">Companies</a>
+      <a href="try-it.html">Try it</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section id="company-dashboard">
+    <div class="ep-wrap">
+      <span class="kicker">Company / Carbon Credit Buyer</span>
+      <h2>Explore Environmental Projects</h2>
+      <p class="sub">Evaluate environmental projects using measurable progress, evidence, risk indicators, and predicted outcomes.</p>
+
+      <!-- Summary Cards -->
+      <div class="stats-bar" id="company-summary-stats">
+        <!-- Injected via company.js -->
+        <div class="stat-tile"><div class="stat-tile-num">3</div><div class="stat-tile-label">Projects Available</div></div>
+        <div class="stat-tile"><div class="stat-tile-num">2</div><div class="stat-tile-label">On Track</div></div>
+        <div class="stat-tile"><div class="stat-tile-num warn">1</div><div class="stat-tile-label">At Risk</div></div>
+        <div class="stat-tile"><div class="stat-tile-num bad">1</div><div class="stat-tile-label">High Risk</div></div>
+      </div>
+
+      <!-- Browse Projects Section -->
+      <div id="company-browse-section" style="margin-top: 40px;">
+        <span class="kicker">Due Diligence</span>
+        <h3 style="font-size: 1.6rem; margin: 6px 0 14px;">Browse Projects</h3>
+        <p class="sub" style="margin-bottom: 20px;">Review verified progress, risk factors, and overall EcoLens scores to identify trustworthy sustainability projects.</p>
+
+        <div class="project-card-grid" id="company-project-cards">
+          <!-- Injected via company.js -->
+        </div>
+      </div>
+
+      <!-- Compare Projects Section -->
+      <div id="company-compare-section" style="margin-top: 48px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+          <div>
+            <span class="kicker">Benchmarking</span>
+            <h3 style="font-size: 1.6rem; margin: 6px 0 8px;">Compare Projects</h3>
+            <p class="sub" style="margin-bottom: 0;">Compare key scores, delivery trajectory, and evidence consistency across candidate projects.</p>
+          </div>
+          <button class="btn btn-ghost" onclick="document.getElementById('company-project-analysis').scrollIntoView({behavior: 'smooth'})">Review Selected Projects &darr;</button>
+        </div>
+
+        <div class="compare-table-wrap" id="company-comparison-table">
+          <!-- Injected via company.js -->
+        </div>
+      </div>
+
+      <!-- Project Evaluation Section -->
+      <div id="company-project-analysis" style="margin-top: 48px;">
+        <span class="kicker">Comprehensive Assessment</span>
+        <h3 style="font-size: 1.6rem; margin: 6px 0 6px;">Project Evaluation &mdash; <span id="eval-project-name">Vanamitra Reforestation</span></h3>
+        <p class="sub" id="eval-project-meta" style="margin-bottom: 20px;">Reforestation &bull; Madhya Pradesh, India &bull; Target: 10,000 trees &bull; Timeline: 12 months</p>
+
+        <!-- Score Breakdown -->
+        <div class="score-breakdown-grid" id="eval-score-grid">
+          <!-- Injected via company.js -->
+        </div>
+        <p class="score-disclaimer" style="margin-top:10px; font-size:0.84rem; color:var(--text-muted);">&bull; EcoLens Score is a decision-support and risk indicator, not official certification. It does not guarantee carbon credit validity.</p>
+
+        <!-- Callout Banner -->
+        <div id="eval-callout-banner" class="ep-banner"></div>
+
+        <!-- Reality Gap Tiles -->
+        <div id="eval-reality-tiles"></div>
+
+        <!-- Expected vs Actual Progress Chart -->
+        <div class="ep-panel" style="margin-top: 24px; padding: 24px 24px 16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+            <h4 style="margin:0; font-size:1.1rem; color:var(--ink);">Expected vs Actual Progress</h4>
+            <span style="font-size:0.82rem; color:var(--ink-faint); font-weight:600;">Verified Timeline Forecast</span>
+          </div>
+          <div class="ep-chartbox" style="height: 320px;">
+            <canvas id="company-eval-chart" aria-label="Expected vs actual progress chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Evidence & Risk Analysis Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px;" id="eval-evidence-risk-grid">
+          <!-- Injected via company.js -->
+        </div>
+
+        <!-- Decision Support Section -->
+        <div class="decision-support-box">
+          <div class="decision-support-text">
+            <h3>Decision Support</h3>
+            <p>Use project performance, evidence confidence, risk indicators, and predicted outcomes to support your sustainability decision.</p>
+          </div>
+          <div class="decision-support-actions">
+            <button class="btn btn-primary" id="btn-shortlist-project">+ Shortlist Project</button>
+            <button class="btn btn-ghost" id="btn-review-another" style="background:#fff;">Review Another Project</button>
+          </div>
+        </div>
+        <div id="decision-feedback" style="margin-top: 14px;"></div>
+
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="ep-wrap">
+    <span>&copy; 2026 EcoLens. Track environmental promises. Detect reality gaps.</span>
+  </div>
+</footer>
+
+<script src="assets/vendor/chart.umd.js"></script>
+<script src="js/config.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/data.js"></script>
+<script src="js/api.js"></script>
+<script src="js/company.js"></script>
+<script src="js/nav.js"></script>
+</body>
+</html>

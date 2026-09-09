@@ -24,6 +24,27 @@ const EP_DATA = {
       startDate: "2026-01-05",
       deadline: "2026-12-31",
       site: { name: "Lonavala ridge, Maharashtra", lat: 18.754, lng: 73.406 },
+      displayLocation: "Madhya Pradesh, India",
+      projectType: "Reforestation",
+      timeline: "12 months (Deadline: 2026-12-31)",
+      progressScore: 82,
+      evidenceScore: 90,
+      consistencyScore: 95,
+      ecoLensScore: 82,
+      riskLevel: "High",
+      outcomePrediction: "At Risk",
+      riskAnalysis: {
+        currentRisk: "High",
+        progressAnomaly: "Flagged (Month 7 irregular jump)",
+        timelineRisk: "Elevated (Projected shortfall ~4,669 trees)",
+        predictedOutcome: "At Risk (Deadline shortfall projected)"
+      },
+      evidenceAnalysis: {
+        photoRelevance: "Verified (88% avg confidence)",
+        duplicateDetection: "Flagged (Month 7 duplicate photo detected)",
+        locationConsistency: "Consistent (0.11 km avg centroid offset)",
+        evidenceConfidence: "90%"
+      },
       gpsToleranceKm: 2,
       updates: [
         {
@@ -184,6 +205,27 @@ const EP_DATA = {
       startDate: "2025-06-10",
       deadline: "2027-06-10",
       site: { name: "Pichavaram mangroves, Tamil Nadu", lat: 11.428, lng: 79.77 },
+      displayLocation: "Tamil Nadu, India",
+      projectType: "Mangrove Restoration",
+      timeline: "24 months (Deadline: 2027-06-10)",
+      progressScore: 92,
+      evidenceScore: 95,
+      consistencyScore: 97,
+      ecoLensScore: 94,
+      riskLevel: "Low",
+      outcomePrediction: "On Track",
+      riskAnalysis: {
+        currentRisk: "Low",
+        progressAnomaly: "Normal (Consistent monthly increments)",
+        timelineRisk: "Low (Trajectory ahead of schedule)",
+        predictedOutcome: "On Track (Projected to finish at ~108.1 ha)"
+      },
+      evidenceAnalysis: {
+        photoRelevance: "Verified (96% avg confidence)",
+        duplicateDetection: "No Duplicate (Unique hashes verified)",
+        locationConsistency: "Consistent (0.08 km avg centroid offset)",
+        evidenceConfidence: "95%"
+      },
       gpsToleranceKm: 2,
       updates: [
         {
@@ -312,6 +354,27 @@ const EP_DATA = {
       startDate: "2026-03-15",
       deadline: "2027-01-15",
       site: { name: "University campus, Bhopal", lat: 23.443, lng: 77.201 },
+      displayLocation: "Bhopal, India",
+      projectType: "Waste Reduction",
+      timeline: "10 months (Deadline: 2027-01-15)",
+      progressScore: 88,
+      evidenceScore: 92,
+      consistencyScore: 94,
+      ecoLensScore: 91,
+      riskLevel: "Low",
+      outcomePrediction: "On Track",
+      riskAnalysis: {
+        currentRisk: "Low",
+        progressAnomaly: "Normal (Smooth diversion progression)",
+        timelineRisk: "Low (Trajectory ahead of target)",
+        predictedOutcome: "On Track (Projected to finish at ~69.2%)"
+      },
+      evidenceAnalysis: {
+        photoRelevance: "Verified (Site facilities confirmed)",
+        duplicateDetection: "No Duplicate (Audited receipts and scales)",
+        locationConsistency: "Consistent (0.04 km campus radius)",
+        evidenceConfidence: "92%"
+      },
       gpsToleranceKm: 0.5,
       updates: [
         {

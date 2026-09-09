@@ -231,6 +231,91 @@ const EcoLensAPI = {
   },
 
   /**
+   * Fetch projects formatted for the Company / Carbon Credit Buyer dashboard.
+   */
+  async getCompanyProjects() {
+    const projects = await this.getProjects();
+    return projects.map(p => {
+      const orig = EP_DATA.projects.find(x => x.id === p.id);
+      const progressPercent = Math.min(100, Math.round((p.verified / p.target) * 100));
+      return {
+        ...p,
+        projectType: orig.projectType || "Environmental",
+        displayLocation: orig.displayLocation || (orig.site ? orig.site.name : "Global"),
+        timeline: orig.timeline || `${orig.durationMonths} months`,
+        progressPercent,
+        ecoLensScore: orig.ecoLensScore || p.trust,
+        progressScore: orig.progressScore || 85,
+        evidenceScore: orig.evidenceScore || 90,
+        consistencyScore: orig.consistencyScore || 95,
+        riskLevel: orig.riskLevel || (p.status.cls === "bad" ? "High" : "Low"),
+        outcomePrediction: orig.outcomePrediction || (p.status.cls === "bad" ? "At Risk" : "On Track"),
+        riskAnalysis: orig.riskAnalysis || {},
+        evidenceAnalysis: orig.evidenceAnalysis || {}
+      };
+    });
+  },
+
+  /**
+   * Fetch full evaluation details for a specific project (Company view).
+   */
+  async getProjectEvaluation(projectId) {
+    const p = await this.getProjectById(projectId);
+    const orig = EP_DATA.projects.find(x => x.id === projectId);
+    const progressPercent = Math.min(100, Math.round((p.verified / p.target) * 100));
+    return {
+      ...p,
+      projectType: orig.projectType || "Environmental",
+      displayLocation: orig.displayLocation || (orig.site ? orig.site.name : "Global"),
+      timeline: orig.timeline || `${orig.durationMonths} months`,
+      progressPercent,
+      ecoLensScore: orig.ecoLensScore || p.trust,
+      progressScore: orig.progressScore || 85,
+      evidenceScore: orig.evidenceScore || 90,
+      consistencyScore: orig.consistencyScore || 95,
+      riskLevel: orig.riskLevel || (p.status.cls === "bad" ? "High" : "Low"),
+      outcomePrediction: orig.outcomePrediction || (p.status.cls === "bad" ? "At Risk" : "On Track"),
+      riskAnalysis: orig.riskAnalysis || {},
+      evidenceAnalysis: orig.evidenceAnalysis || {}
+    };
+  },
+
+  /**
+   * Fetch projects formatted for the Environmental Organization dashboard.
+   */
+  async getOrganizationProjects() {
+    const projects = await this.getCompanyProjects();
+    const activeProjects = projects.length;
+    const onTrack = projects.filter(p => p.status.cls === "ok").length;
+    const atRisk = projects.filter(p => p.status.cls !== "ok").length;
+    const evidenceSubmitted = EP_DATA.projects.reduce((sum, p) => sum + p.updates.length, 0);
+
+    return {
+      summary: {
+        activeProjects,
+        onTrack,
+        atRisk,
+        evidenceSubmitted
+      },
+      projects
+    };
+  },
+
+  /**
+   * Submit a new progress update for a project (Organization view).
+   * In demo mode, simulates async upload and returns confirmation.
+   */
+  async submitProgressUpdate(updateData) {
+    await new Promise(resolve => setTimeout(resolve, 600));
+    return {
+      success: true,
+      updateId: "upd-" + Date.now(),
+      message: "Progress update submitted successfully. EcoLens verification checks queued.",
+      timestamp: new Date().toISOString()
+    };
+  },
+
+  /**
    * Helper: Calculate linear regression forecast & 95% confidence bands
    */
   _calculateForecast(project) {
