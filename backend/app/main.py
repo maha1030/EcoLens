@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from app.database import Base, engine
 from app.models import Project
-from app.routers import projects, progress, analysis, risk, prediction, score
+from app.routers import projects, progress, analysis, risk, prediction, score, evidence
 
 
 Base.metadata.create_all(bind=engine)
@@ -21,6 +21,7 @@ app.include_router(analysis.router)
 app.include_router(risk.router)
 app.include_router(prediction.router)
 app.include_router(score.router)
+app.include_router(evidence.router)
 
 
 @app.get("/")
