@@ -1,2 +1,22 @@
 frontend_old/ 
 __pycache__/ 
+
+# Python
+__pycache__/
+*.pyc
+
+# Local secrets
+.env
+backend/.env
+
+# Local database and backups
+backend/test.db
+backend/test_before_*.db
+
+# Generated test/runtime files
+backend/test_images/
+backend/uploads/
+backend/test_suite_results.json
+
+# Local test scripts
+backend/test_suite_a_j.py

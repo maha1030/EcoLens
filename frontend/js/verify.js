@@ -18,6 +18,9 @@ function isSafeLocalAsset(src) {
   if (typeof src !== "string") return false;
   const s = src.trim();
   if (!s) return false;
+  // Allow local backend upload URLs (127.0.0.1 / localhost) and relative paths
+  if (/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\//i.test(s)) return true;
+  if (s.startsWith("/")) return true;
   // External URLs (http://, https://, protocol-relative //)
   if (/^(?:https?:)?\/\//i.test(s)) return false;
   // Non-local URI schemes (exclude data/blob/file)
@@ -25,20 +28,58 @@ function isSafeLocalAsset(src) {
   return true;
 }
 
-function epLoadImage(src) {
-  return new Promise((resolve, reject) => {
-    try {
+async function epLoadImage(src) {
+  if (typeof src !== "string" || !src.trim()) {
+    throw new Error("Invalid image source");
+  }
+  const url = src.trim();
+
+  // For data: or blob: or file: URLs, load directly into Image
+  if (url.startsWith("data:") || url.startsWith("blob:") || url.startsWith("file:")) {
+    return new Promise((resolve, reject) => {
       const img = new Image();
-      if (/^https?:\/\//i.test(src)) {
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Could not load image: " + url));
+      img.src = url;
+    });
+  }
+
+  // For HTTP/HTTPS or relative URLs, fetch as Blob to create a same-origin Blob URL
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+
+    return await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("Could not load blob image for: " + url));
+      };
+      img.src = objectUrl;
+    });
+  } catch (err) {
+    // Fallback loading mechanism if fetch encounters an error
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      if (/^(?:https?:)?\/\//i.test(url) || url.startsWith("/")) {
         img.crossOrigin = "anonymous";
       }
       img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error("Could not load image: " + src));
-      img.src = src;
-    } catch (err) {
-      reject(err);
-    }
-  });
+      img.onerror = () => reject(new Error("Could not load image fallback: " + url));
+      const cacheBustUrl = /^https?:\/\//i.test(url)
+        ? (url.includes("?") ? `${url}&_cb=${Date.now()}` : `${url}?_cb=${Date.now()}`)
+        : url;
+      img.src = cacheBustUrl;
+    });
+  }
 }
 
 /* 64-bit difference hash: 9x8 grayscale, horizontal gradient sign per row. */
@@ -75,34 +116,137 @@ function epHamming(a, b) {
   return d;
 }
 
-/* Fraction of pixels that look like vegetation (green foliage). */
-function epVegetationRatio(img) {
+/* Comprehensive photo relevance analysis:
+ * Evaluates:
+ * 1. Vegetation pixel ratio (HSV foliage detection)
+ * 2. Spatial distribution across a 4x4 sector grid (16 blocks)
+ * 3. Color and texture variation (luminance stdDev and adjacent pixel difference)
+ * 4. Uniformity penalty for artificial flat / solid-color images
+ */
+function epAnalyzePhotoRelevance(img) {
   try {
     const c = document.createElement("canvas");
     c.width = 64; c.height = 64;
     const ctx = c.getContext("2d", { willReadFrequently: true });
     ctx.drawImage(img, 0, 0, 64, 64);
     const px = ctx.getImageData(0, 0, 64, 64).data;
+
     let green = 0, total = 0;
-    for (let i = 0; i < px.length; i += 4) {
-      const r = px[i] / 255, g = px[i + 1] / 255, b = px[i + 2] / 255;
-      const max = Math.max(r, g, b), min = Math.min(r, g, b);
-      const v = max, s = max > 0 ? (max - min) / max : 0;
-      let h = 0;
-      if (max !== min) {
-        if (max === r) h = 60 * (((g - b) / (max - min)) % 6);
-        else if (max === g) h = 60 * ((b - r) / (max - min) + 2);
-        else h = 60 * ((r - g) / (max - min) + 4);
+    const blockGreens = new Array(16).fill(0);
+    const blockTotals = new Array(16).fill(0);
+
+    let sumLum = 0, sumLumSq = 0;
+    let sumDiff = 0, diffCount = 0;
+
+    // 4096 bins for 12-bit quantized color distribution (r>>4, g>>4, b>>4)
+    const colorBins = new Uint8Array(4096);
+    let uniqueColors = 0;
+
+    for (let y = 0; y < 64; y++) {
+      const by = Math.floor(y / 16);
+      for (let x = 0; x < 64; x++) {
+        const bx = Math.floor(x / 16);
+        const blockIdx = by * 4 + bx;
+        const i = (y * 64 + x) * 4;
+
+        const r255 = px[i], g255 = px[i + 1], b255 = px[i + 2];
+        const r = r255 / 255, g = g255 / 255, b = b255 / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        const v = max, s = max > 0 ? (max - min) / max : 0;
+        let h = 0;
+        if (max !== min) {
+          if (max === r) h = 60 * (((g - b) / (max - min)) % 6);
+          else if (max === g) h = 60 * ((b - r) / (max - min) + 2);
+          else h = 60 * ((r - g) / (max - min) + 4);
+        }
+        if (h < 0) h += 360;
+
+        total++;
+        blockTotals[blockIdx]++;
+
+        const isGreen = (h >= 60 && h <= 170 && s >= 0.18 && v >= 0.12);
+        if (isGreen) {
+          green++;
+          blockGreens[blockIdx]++;
+        }
+
+        // Luminance for variance/texture
+        const lum = 0.299 * r255 + 0.587 * g255 + 0.114 * b255;
+        sumLum += lum;
+        sumLumSq += lum * lum;
+
+        // Neighbor difference (horizontal and vertical)
+        if (x < 63) {
+          const nextR = px[i + 4], nextG = px[i + 5], nextB = px[i + 6];
+          const nextLum = 0.299 * nextR + 0.587 * nextG + 0.114 * nextB;
+          sumDiff += Math.abs(lum - nextLum);
+          diffCount++;
+        }
+        if (y < 63) {
+          const downR = px[i + 256], downG = px[i + 257], downB = px[i + 258];
+          const downLum = 0.299 * downR + 0.587 * downG + 0.114 * downB;
+          sumDiff += Math.abs(lum - downLum);
+          diffCount++;
+        }
+
+        // 12-bit quantized color (4 bits per channel: 0..15)
+        const qR = r255 >> 4, qG = g255 >> 4, qB = b255 >> 4;
+        const colorKey = (qR << 8) | (qG << 4) | qB;
+        if (colorBins[colorKey] === 0) {
+          colorBins[colorKey] = 1;
+          uniqueColors++;
+        }
       }
-      if (h < 0) h += 360;
-      total++;
-      if (h >= 60 && h <= 170 && s >= 0.18 && v >= 0.12) green++;
     }
-    return green / total;
+
+    const vegRatio = total > 0 ? (green / total) : 0;
+
+    // Spatial distribution across 16 sectors (at least 4% green per sector)
+    let activeBlocks = 0;
+    for (let b = 0; b < 16; b++) {
+      if (blockTotals[b] > 0 && (blockGreens[b] / blockTotals[b]) >= 0.04) {
+        activeBlocks++;
+      }
+    }
+
+    // Luminance standard deviation & mean neighbor difference
+    const meanLum = sumLum / total;
+    const lumVar = Math.max(0, (sumLumSq / total) - (meanLum * meanLum));
+    const lumStdDev = Math.sqrt(lumVar);
+    const meanDiff = diffCount > 0 ? (sumDiff / diffCount) : 0;
+
+    // Uniformity check:
+    // Solid artificial color: extremely low unique colors (<= 3) or almost zero stdDev (< 2.5) with no neighbor difference (< 1.0)
+    const isUniformSolid = (uniqueColors <= 3) || (lumStdDev < 2.5 && meanDiff < 1.0);
+
+    // Low texture check:
+    // Painted wall / flat graphic: low unique colors (< 6) or very low contrast variation
+    const isLowTexture = !isUniformSolid && (uniqueColors < 6 || (lumStdDev < 5.0 && meanDiff < 1.8));
+
+    // Clustered check:
+    // Isolated logo / graphic on non-green background: vegetation restricted to <= 3 blocks and < 35% total image
+    const isClustered = !isUniformSolid && (activeBlocks <= 3 && vegRatio < 0.35 && vegRatio >= 0.05);
+
+    return {
+      vegRatio,
+      activeBlocks,
+      lumStdDev,
+      meanDiff,
+      uniqueColors,
+      isUniformSolid,
+      isLowTexture,
+      isClustered
+    };
   } catch (err) {
-    console.warn("epVegetationRatio: canvas pixel analysis skipped or blocked by browser security:", err.message);
-    return undefined;
+    console.warn("epAnalyzePhotoRelevance: canvas pixel analysis skipped or blocked by browser security:", err.message);
+    return null;
   }
+}
+
+/* Fraction of pixels that look like vegetation (green foliage). Kept for full backwards compatibility. */
+function epVegetationRatio(img) {
+  const analysis = epAnalyzePhotoRelevance(img);
+  return analysis ? analysis.vegRatio : undefined;
 }
 
 /* ---------- numeric helpers ---------- */
@@ -200,31 +344,86 @@ const EP_CHECK_LABELS = {
 
 function epEvaluateUpdate(project, update, priors, priorHashes) {
   const checks = {};
+  const isNature = !project.kind || project.kind === "nature" || project.kind === "Reforestation" || project.projectType === "Reforestation" || project.kind === "Mangrove Restoration" || project.kind === "Afforestation";
   const applicable = ["duplicate", "gps", "plausibility"];
-  if (project.kind === "nature") applicable.unshift("relevance");
+  if (isNature) applicable.unshift("relevance");
 
-  /* 1. photo relevance: vegetation pixel ratio, nature projects only. */
-  const veg = update._vegRatio;
-  if (project.kind !== "nature") {
-    checks.relevance = { status: "na", points: EP_WEIGHTS.relevance,
-      detail: "Vegetation heuristic not applicable to this project type." };
+  /* 1. photo relevance: semantic vision model (CLIP) as primary signal, with pixel heuristic fallback. */
+  const vision = update.visionRelevance || update._visionRelevance;
+  const rel = update._relevanceAnalysis;
+  const veg = rel ? rel.vegRatio : update._vegRatio;
+
+  if (!isNature) {
+    checks.relevance = {
+      status: "na",
+      points: 0,
+      detail: "Vegetation heuristic not applicable to this project type."
+    };
+  } else if (vision && vision.status && vision.status !== "na") {
+    // Primary: Pretrained Vision-Language Model (CLIP)
+    const pts = vision.status === "pass" ? EP_WEIGHTS.relevance : (vision.status === "watch" ? EP_WEIGHTS.relevance / 2 : 0);
+    checks.relevance = {
+      status: vision.status,
+      points: pts,
+      detail: vision.detail || `${vision.semantic_score || 0}% semantic relevance.`
+    };
   } else if (veg === undefined || veg === null) {
-    checks.relevance = { status: "na", points: EP_WEIGHTS.relevance, detail: "Photo pixel analysis unavailable or skipped." };
+    checks.relevance = {
+      status: "na",
+      points: 0,
+      detail: (vision && vision.detail) ? vision.detail : "Unable to verify (photo un-decodable)"
+    };
+  } else if (rel && rel.isUniformSolid) {
+    const pct = Math.round(veg * 100);
+    checks.relevance = {
+      status: "fail",
+      points: 0,
+      detail: `${pct}% green pixels, but flagged: artificial uniform solid color detected (penalty applied; texture stdDev ${rel.lumStdDev.toFixed(1)}). Lacks natural scene texture.`
+    };
+  } else if (veg < 0.05) {
+    const pct = Math.round(veg * 100);
+    checks.relevance = {
+      status: "fail",
+      points: 0,
+      detail: `${pct}% vegetation pixels. Photo does not look like the project site.`
+    };
+  } else if (rel && rel.isLowTexture) {
+    const pct = Math.round(veg * 100);
+    checks.relevance = {
+      status: "watch",
+      points: EP_WEIGHTS.relevance / 2,
+      detail: `${pct}% vegetation pixels, but low scene texture/variation detected (${rel.uniqueColors} color bins, texture stdDev ${rel.lumStdDev.toFixed(1)}). Potential flat surface or painted wall (review required).`
+    };
+  } else if (rel && rel.isClustered) {
+    const pct = Math.round(veg * 100);
+    checks.relevance = {
+      status: "watch",
+      points: EP_WEIGHTS.relevance / 2,
+      detail: `${pct}% vegetation pixels concentrated in isolated area (${rel.activeBlocks}/16 sectors). Potential logo or synthetic graphic (review required).`
+    };
+  } else if (veg >= 0.12 && (!rel || rel.activeBlocks >= 4)) {
+    const pct = Math.round(veg * 100);
+    const sectorInfo = rel ? ` and natural distribution (${rel.activeBlocks}/16 sectors)` : "";
+    checks.relevance = {
+      status: "pass",
+      points: EP_WEIGHTS.relevance,
+      detail: `${pct}% vegetation pixels with natural texture${sectorInfo}, consistent with field evidence.`
+    };
   } else {
     const pct = Math.round(veg * 100);
-    if (veg >= 0.10) checks.relevance = { status: "pass", points: EP_WEIGHTS.relevance,
-      detail: `${pct}% vegetation pixels, consistent with a field photo.` };
-    else if (veg >= 0.04) checks.relevance = { status: "watch", points: EP_WEIGHTS.relevance / 2,
-      detail: `Only ${pct}% vegetation pixels. Weak field evidence.` };
-    else checks.relevance = { status: "fail", points: 0,
-      detail: `${pct}% vegetation pixels. Photo does not look like the project site.` };
+    const sectorInfo = rel ? ` (${rel.activeBlocks}/16 sectors)` : "";
+    checks.relevance = {
+      status: "watch",
+      points: EP_WEIGHTS.relevance / 2,
+      detail: `${pct}% vegetation pixels${sectorInfo}. Moderate vegetation coverage or mixed scene (review recommended).`
+    };
   }
 
   /* 2. duplicate photo: dHash distance against all earlier photos of this project. */
   if (!update._hash) {
-    checks.duplicate = { status: "na", points: EP_WEIGHTS.duplicate, detail: "Photo hash unavailable (pixel analysis skipped)." };
+    checks.duplicate = { status: "na", points: 0, detail: "Unable to verify (photo un-decodable)" };
   } else if (!priorHashes.length) {
-    checks.duplicate = { status: "na", points: EP_WEIGHTS.duplicate, detail: "First photo of this project, nothing to compare." };
+    checks.duplicate = { status: "pass", points: EP_WEIGHTS.duplicate, detail: "First photo of this project, registered as reference image." };
   } else {
     let best = { dist: Infinity, month: null };
     priorHashes.forEach((h) => {
@@ -235,7 +434,7 @@ function epEvaluateUpdate(project, update, priors, priorHashes) {
     });
     update._nearestRepeat = best;
     if (best.month === null) {
-      checks.duplicate = { status: "na", points: EP_WEIGHTS.duplicate, detail: "No prior valid photo hash to compare." };
+      checks.duplicate = { status: "na", points: 0, detail: "No prior valid photo hash to compare." };
     } else if (best.dist <= EP_DUPLICATE_MAX) {
       checks.duplicate = { status: "fail", points: 0,
         detail: `Hamming distance ${best.dist}/64 to the photo of month ${best.month}. Photo already used.` };
@@ -249,21 +448,26 @@ function epEvaluateUpdate(project, update, priors, priorHashes) {
   }
 
   /* 3. GPS cross-check: haversine distance to the project site. */
-  const km = epHaversineKm(update.lat, update.lng, project.site.lat, project.site.lng);
-  update._gpsKm = km;
-  const tol = project.gpsToleranceKm;
-  if (km <= tol) checks.gps = { status: "pass", points: EP_WEIGHTS.gps,
-    detail: `${km.toFixed(2)} km from site centroid, within the ${tol} km tolerance.` };
-  else if (km <= 2 * tol) checks.gps = { status: "watch", points: EP_WEIGHTS.gps / 2,
-    detail: `${km.toFixed(2)} km from site centroid. Outside the ${tol} km tolerance but close.` };
-  else checks.gps = { status: "fail", points: 0,
-    detail: `${km.toFixed(2)} km from site centroid, far outside the ${tol} km tolerance.` };
+  if (update.hasFieldGps === false || update.lat === undefined || update.lat === null || !project.site) {
+    checks.gps = { status: "na", points: 0,
+      detail: "Verification Pending (Field GPS coordinates not recorded in database)" };
+  } else {
+    const km = epHaversineKm(update.lat, update.lng, project.site.lat, project.site.lng);
+    update._gpsKm = km;
+    const tol = project.gpsToleranceKm || 5;
+    if (km <= tol) checks.gps = { status: "pass", points: EP_WEIGHTS.gps,
+      detail: `${km.toFixed(2)} km from site centroid, within the ${tol} km tolerance.` };
+    else if (km <= 2 * tol) checks.gps = { status: "watch", points: EP_WEIGHTS.gps / 2,
+      detail: `${km.toFixed(2)} km from site centroid. Outside the ${tol} km tolerance but close.` };
+    else checks.gps = { status: "fail", points: 0,
+      detail: `${km.toFixed(2)} km from site centroid, far outside the ${tol} km tolerance.` };
+  }
 
   /* 4. growth plausibility: modified z-score of this increment vs history. */
   const claimed = project.updates.filter((u) => u.month < update.month).map((u) => u.claimed);
   const z = epModifiedZ(update.claimed, claimed);
   update._z = z;
-  if (z === null) checks.plausibility = { status: "na", points: EP_WEIGHTS.plausibility,
+  if (z === null) checks.plausibility = { status: "na", points: 0,
     detail: "Not enough reporting history to judge this increment." };
   else if (Math.abs(z) >= EP_Z_FAIL) checks.plausibility = { status: "fail", points: 0,
     detail: `Increment of ${update.claimed} is ${z.toFixed(1)} sigmas above the project norm (modified z-score).` };
@@ -284,20 +488,34 @@ function epEvaluateUpdate(project, update, priors, priorHashes) {
 /* Load every photo of a project, hash it, run relevance, evaluate all updates. */
 async function epEvaluateProject(project) {
   const hashes = [];
+  const isNature = !project.kind || project.kind === "nature" || project.kind === "Reforestation" || project.projectType === "Reforestation" || project.kind === "Mangrove Restoration" || project.kind === "Afforestation";
   for (const u of project.updates) {
+    if (u.visionRelevance) {
+      u._visionRelevance = u.visionRelevance;
+    }
     try {
       if (isSafeLocalAsset(u.photo)) {
         const img = await epLoadImage(u.photo);
         u._hash = epDHash(img);
-        if (project.kind === "nature") u._vegRatio = epVegetationRatio(img);
+        if (isNature) {
+          const relAnalysis = epAnalyzePhotoRelevance(img);
+          u._relevanceAnalysis = relAnalysis;
+          u._vegRatio = relAnalysis ? relAnalysis.vegRatio : undefined;
+        }
       } else {
         u._hash = null;
-        if (project.kind === "nature") u._vegRatio = undefined;
+        if (isNature) {
+          u._relevanceAnalysis = null;
+          u._vegRatio = undefined;
+        }
       }
     } catch (err) {
       console.warn("Could not process photo for update:", u.photo, err.message);
       u._hash = null;
-      if (project.kind === "nature") u._vegRatio = undefined;
+      if (isNature) {
+        u._relevanceAnalysis = null;
+        u._vegRatio = undefined;
+      }
     }
 
     try {
@@ -323,10 +541,10 @@ async function epEvaluateProject(project) {
     }
   }
 
-  const evaluated = project.updates.filter(u => u._result && typeof u._result.confidence === "number");
-  project._trust = evaluated.length > 0
-    ? Math.round(evaluated.reduce((s, u) => s + u._result.confidence, 0) / evaluated.length)
-    : 80;
+  const validEvaluated = project.updates.filter(u => (u.photo || u.hasFieldGps) && u._result && u._result.checks && u._result.checks.relevance && u._result.checks.relevance.status !== "na");
+  project._trust = validEvaluated.length > 0
+    ? Math.round(validEvaluated.reduce((s, u) => s + u._result.confidence, 0) / validEvaluated.length)
+    : null;
   return project;
 }
 
@@ -338,4 +556,25 @@ async function epEvaluateAll() {
       console.warn("Failed to evaluate project:", p.name, err);
     }
   }
+}
+
+if (typeof window !== "undefined") {
+  window.epDHash = epDHash;
+  window.epVegetationRatio = epVegetationRatio;
+  window.epAnalyzePhotoRelevance = epAnalyzePhotoRelevance;
+  window.epEvaluateUpdate = epEvaluateUpdate;
+  window.epEvaluateProject = epEvaluateProject;
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    epDHash,
+    epHamming,
+    epVegetationRatio,
+    epAnalyzePhotoRelevance,
+    epEvaluateUpdate,
+    epEvaluateProject,
+    epHaversineKm,
+    epModifiedZ
+  };
 }

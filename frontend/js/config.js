@@ -11,8 +11,8 @@
 
 const EcoLensConfig = {
   /* ---- API Settings ---- */
-  API_BASE_URL: "",          // Empty = mock mode; set to "/api/v1" for real backend
-  USE_MOCK: true,            // true = demo/mock responses; false = call real endpoints
+  API_BASE_URL: "http://127.0.0.1:8000",
+  USE_MOCK: false,
 
   /* ---- File Upload Validation ---- */
   MAX_FILE_SIZE_MB: 10,

@@ -46,10 +46,17 @@ def analyze_project(
     )
 
     if not latest_update:
-        raise HTTPException(
-            status_code=400,
-            detail="No progress updates found"
-        )
+        return {
+            "project_id": project.id,
+            "project_name": project.name,
+            "target_value": project.target_value,
+            "target_unit": project.target_unit,
+            "latest_progress_value": 0.0,
+            "expected_progress_percentage": 0.0,
+            "actual_progress_percentage": 0.0,
+            "progress_gap_percentage": 0.0,
+            "status": "PENDING"
+        }
 
     try:
         analysis = calculate_progress_analysis(

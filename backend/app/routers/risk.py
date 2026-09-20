@@ -46,10 +46,13 @@ def detect_project_risk(
     )
 
     if not updates:
-        raise HTTPException(
-            status_code=400,
-            detail="No progress updates found for this project"
-        )
+        return {
+            "project_id": project.id,
+            "project_name": project.name,
+            "overall_risk": "UNKNOWN",
+            "number_of_risks": 0,
+            "risks": []
+        }
 
     # Run risk detection service
     risk_result = detect_risks(

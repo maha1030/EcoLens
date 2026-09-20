@@ -32,7 +32,8 @@ const EcoLensUI = {
    * @returns {string}
    */
   formatValue(value, unit) {
-    if (unit === "trees") {
+    if (value === null || value === undefined || isNaN(value)) return "0";
+    if (unit === "trees" || unit === "saplings") {
       return Math.round(value).toLocaleString("en-US");
     }
     return (Math.round(value * 10) / 10).toLocaleString("en-US");
@@ -45,9 +46,25 @@ const EcoLensUI = {
    * @returns {string}
    */
   shortUnit(unit) {
-    if (unit === "trees") return "trees";
+    if (!unit) return "";
     if (unit === "hectares") return "ha";
-    return "%";
+    return unit;
+  },
+
+  /**
+   * Escape special HTML characters to prevent XSS.
+   *
+   * @param {string|any} str
+   * @returns {string}
+   */
+  escapeHtml(str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   },
 
   /**
@@ -57,6 +74,6 @@ const EcoLensUI = {
    * @returns {string} HTML markup
    */
   renderErrorNotice(message) {
-    return `<div class="ep-error-inline" role="alert"><strong>Notice:</strong> ${message}</div>`;
+    return `<div class="ep-error-inline" role="alert"><strong>Notice:</strong> ${this.escapeHtml(message)}</div>`;
   }
 };

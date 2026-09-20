@@ -48,8 +48,21 @@ def get_ecopromise_score(
         .all()
     )
 
-    try:
+    if len(updates) < 2:
+        return {
+            "project_id": project.id,
+            "project_name": project.name,
+            "progress_score": None,
+            "risk_score": None,
+            "prediction_score": None,
+            "ecopromise_score": None,
+            "rating": "PENDING DATA",
+            "analysis": None,
+            "risk_details": None,
+            "prediction": None
+        }
 
+    try:
         score_result = calculate_ecopromise_score(
             project,
             updates

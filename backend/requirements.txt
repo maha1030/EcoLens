@@ -1,0 +1,22 @@
+# EcoLens Backend Dependencies
+# Python 3.10+ compatible
+
+# Web Framework & ASGI Server
+fastapi>=0.110.0,<1.0.0
+uvicorn[standard]>=0.28.0,<1.0.0
+
+# Database & Data Modeling
+sqlalchemy>=2.0.0,<3.0.0
+pydantic>=2.6.0,<3.0.0
+python-dotenv>=1.0.0,<2.0.0
+
+# File Uploads & Evidence Handling
+python-multipart>=0.0.9
+pillow>=10.0.0,<13.0.0
+
+# Cloud Evidence Storage (Configured via .env)
+supabase>=2.3.0,<3.0.0
+
+# Vision-Language AI Model (Photo Relevance Verification)
+torch>=2.0.0
+transformers>=4.38.0

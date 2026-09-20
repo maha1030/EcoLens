@@ -7,33 +7,38 @@
 "use strict";
 
 let epCompanyProjects = [];
-let epSelectedCompanyProjectId = "vanamitra";
+let epSelectedCompanyProjectId = null;
 let epCompanyChart = null;
 let epShortlistedProjects = new Set();
-let epComparedProjects = new Set(["vanamitra", "pichavaram", "zerowaste"]);
+let epComparedProjects = new Set();
+
+const epEsc = (s) => (typeof EcoLensUI !== "undefined" && EcoLensUI.escapeHtml) ? EcoLensUI.escapeHtml(s) : String(s ?? "");
 
 function epCompFormat(val, unit) {
   if (typeof EcoLensUI !== "undefined") {
     return EcoLensUI.formatValue(val, unit);
   }
-  return unit === "trees" ? Math.round(val).toLocaleString("en-US") : (Math.round(val * 10) / 10).toLocaleString("en-US");
+  if (val === null || val === undefined || isNaN(val)) return "0";
+  return unit === "trees" || unit === "saplings" ? Math.round(val).toLocaleString("en-US") : (Math.round(val * 10) / 10).toLocaleString("en-US");
 }
 
 function epCompShortUnit(unit) {
   if (typeof EcoLensUI !== "undefined") {
     return EcoLensUI.shortUnit(unit);
   }
-  return unit === "trees" ? "trees" : unit === "hectares" ? "ha" : "%";
+  if (!unit) return "";
+  if (unit === "hectares") return "ha";
+  return unit;
 }
 
 /* ---------- Render Summary Stats ---------- */
-function epRenderCompanySummary(projects) {
+function epRenderCompanySummary(projects, dashboardStats = null) {
   const container = document.getElementById("company-summary-stats");
   if (!container) return;
 
   const total = projects.length;
   const onTrack = projects.filter(p => p.outcomePrediction === "On Track").length;
-  const atRisk = projects.filter(p => p.outcomePrediction === "At Risk").length;
+  const atRisk = projects.filter(p => p.outcomePrediction === "At Risk" || p.outcomePrediction === "Off Track" || (p.status && (p.status.cls === "warn" || p.status.cls === "bad"))).length;
   const highRisk = projects.filter(p => p.riskLevel === "High").length;
 
   container.innerHTML = `
@@ -63,10 +68,20 @@ function epRenderCompanyCards(projects) {
 
   container.innerHTML = "";
 
+  if (!projects || projects.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 30px; text-align: center; background: var(--surface); border: 1px dashed var(--line); border-radius: var(--radius);">
+        <h4 style="margin:0 0 8px; color: var(--ink);">No projects available</h4>
+        <p style="margin:0; font-size: 0.9rem; color: var(--ink-soft);">No environmental pledge projects were returned by the backend database.</p>
+      </div>
+    `;
+    return;
+  }
+
   projects.forEach(p => {
-    const isSelected = p.id === epSelectedCompanyProjectId;
-    const isShortlisted = epShortlistedProjects.has(p.id);
-    const isCompared = epComparedProjects.has(p.id);
+    const isSelected = String(p.id) === String(epSelectedCompanyProjectId);
+    const isShortlisted = epShortlistedProjects.has(String(p.id));
+    const isCompared = epComparedProjects.has(String(p.id));
 
     const card = document.createElement("div");
     card.className = "proj-card" + (isSelected ? " selected-card" : "");
@@ -74,52 +89,60 @@ function epRenderCompanyCards(projects) {
 
     const riskBadge = p.riskLevel === "High"
       ? `<span class="ep-badge ep-badge-failed">High Risk</span>`
-      : `<span class="ep-badge ep-badge-verified">Low Risk</span>`;
+      : (p.riskLevel === "Low"
+        ? `<span class="ep-badge ep-badge-verified">Low Risk</span>`
+        : `<span class="ep-badge ep-badge-pending">${p.riskLevel || 'Pending Data'}</span>`);
 
-    const outcomeBadge = p.outcomePrediction === "On Track"
-      ? `<span class="ep-badge ep-badge-verified">On Track</span>`
-      : `<span class="ep-badge ep-badge-review">At Risk</span>`;
+    const trajectoryBadge = (p.status && p.status.cls === "ok")
+      ? `<span class="ep-badge ep-badge-verified">${epEsc(p.status.label)}</span>`
+      : (p.status && p.status.cls === "warn"
+        ? `<span class="ep-badge ep-badge-review">${epEsc(p.status.label)}</span>`
+        : `<span class="ep-badge ep-badge-failed">${epEsc(p.status ? p.status.label : 'Off Track')}</span>`);
+
+    const scoreDisplay = (p.ecoLensScore !== undefined && p.ecoLensScore !== "N/A")
+      ? `${p.ecoLensScore}<span style="font-size:0.75rem; color:var(--ink-faint); font-weight:600;">/100</span>`
+      : `<span style="font-size:0.95rem; font-weight:700; color:var(--ink-soft);">N/A</span>`;
 
     card.innerHTML = `
       <div>
         <div class="proj-card-top">
-          <h3>${p.name}</h3>
+          <h3>${epEsc(p.name)}</h3>
           <div style="text-align:right;">
-            <div style="font-size:1.35rem; font-weight:800; color:var(--green-900); line-height:1;">${p.ecoLensScore}<span style="font-size:0.75rem; color:var(--ink-faint); font-weight:600;">/100</span></div>
+            <div style="font-size:1.35rem; font-weight:800; color:var(--green-900); line-height:1;">${scoreDisplay}</div>
             <div style="font-size:0.68rem; font-weight:700; color:var(--ink-faint); text-transform:uppercase;">EcoLens Score</div>
           </div>
         </div>
-        <div class="proj-card-type">${p.projectType}</div>
+        <div class="proj-card-type">${epEsc(p.projectType || p.kind || 'Environmental')}</div>
         <div class="proj-card-location">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-          ${p.displayLocation}
+          ${epEsc(p.displayLocation || (p.site ? p.site.name : 'Site Location'))}
         </div>
 
         <div style="display:flex; gap:8px; margin-bottom:12px;">
           ${riskBadge}
-          ${outcomeBadge}
+          ${trajectoryBadge}
         </div>
 
         <div class="ep-card-bar" style="margin: 8px 0 6px;">
-          <div class="ep-card-fill" style="width: ${p.progressPercent}%"></div>
+          <div class="ep-card-fill" style="width: ${p.progressPercent || 0}%"></div>
         </div>
 
         <div class="proj-card-metrics">
           <div class="proj-metric-row">
             <span>Target</span>
-            <strong>${epCompFormat(p.target, p.unit)} ${epCompShortUnit(p.unit)}</strong>
+            <strong>${epCompFormat(p.target || 0, p.unit)} ${epCompShortUnit(p.unit)}</strong>
           </div>
           <div class="proj-metric-row">
             <span>Current Progress</span>
-            <strong>${epCompFormat(p.verified, p.unit)} ${epCompShortUnit(p.unit)}</strong>
+            <strong>${epCompFormat(p.verified || 0, p.unit)} ${epCompShortUnit(p.unit)}</strong>
           </div>
           <div class="proj-metric-row">
             <span>Completion</span>
-            <strong>${p.progressPercent}%</strong>
+            <strong>${p.progressPercent || 0}%</strong>
           </div>
           <div class="proj-metric-row">
             <span>Outcome Prediction</span>
-            <strong style="color:var(--${p.outcomePrediction === 'On Track' ? 'green-900' : 'red-600'});">${p.outcomePrediction}</strong>
+            <strong style="color:var(--${p.outcomePrediction === 'On Track' ? 'green-900' : 'red-600'});">${p.outcomePrediction || 'Pending Data'}</strong>
           </div>
         </div>
       </div>
@@ -135,60 +158,88 @@ function epRenderCompanyCards(projects) {
 }
 
 /* ---------- Toggle Comparison Project ---------- */
-function epToggleCompare(projectId) {
-  if (epComparedProjects.has(projectId)) {
-    if (epComparedProjects.size > 2) {
-      epComparedProjects.delete(projectId);
-    } else {
-      alert("Please keep at least 2 projects selected for comparison.");
-      return;
-    }
+async function epToggleCompare(projectId) {
+  const pIdStr = String(projectId);
+  if (epComparedProjects.has(pIdStr)) {
+    epComparedProjects.delete(pIdStr);
   } else {
-    epComparedProjects.add(projectId);
+    epComparedProjects.add(pIdStr);
   }
   epRenderCompanyCards(epCompanyProjects);
-  epRenderComparisonTable();
+  await epRenderComparisonTable();
 }
 
 /* ---------- Render Comparison Table ---------- */
-function epRenderComparisonTable() {
+async function epRenderComparisonTable() {
   const container = document.getElementById("company-comparison-table");
   if (!container) return;
 
-  const compared = epCompanyProjects.filter(p => epComparedProjects.has(p.id));
+  if (epComparedProjects.size === 0) {
+    container.innerHTML = `
+      <div style="padding: 24px; text-align: center; background: var(--surface); border: 1px dashed var(--line); border-radius: var(--radius); margin-top: 14px;">
+        <p style="margin:0; font-size: 0.9rem; color: var(--ink-soft);">Select 1 or more projects using "+ Compare" above to view side-by-side benchmarking.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const ids = Array.from(epComparedProjects);
+  if (ids.length < 2) {
+    container.innerHTML = `
+      <div style="padding: 32px 20px; text-align: center; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);">
+        <p style="margin: 0 0 6px; font-weight: 700; color: var(--ink); font-size: 0.95rem;">Select at least 2 projects to compare</p>
+        <p style="margin: 0; font-size: 0.85rem;">Check multiple projects in the list above to view side-by-side benchmark comparisons.</p>
+      </div>
+    `;
+    return;
+  }
+
+  let compared = [];
+  try {
+    if (typeof EcoLensConfig !== "undefined" && !EcoLensConfig.USE_MOCK) {
+      compared = await EcoLensAPI.getCompareProjects(ids);
+    } else {
+      compared = epCompanyProjects.filter(p => epComparedProjects.has(String(p.id)));
+    }
+  } catch (err) {
+    console.warn("API comparison fetch error, falling back to local:", err.message);
+    compared = epCompanyProjects.filter(p => epComparedProjects.has(String(p.id)));
+  }
+
   if (compared.length === 0) return;
 
   let ths = `<th>Metric</th>`;
   compared.forEach(p => {
-    ths += `
-      <th>
-        <div style="font-size:0.96rem; font-weight:700;">${p.name}</div>
-        <div style="font-size:0.75rem; font-weight:500; text-transform:none; color:var(--ink-soft);">${p.projectType} \u00b7 ${p.displayLocation}</div>
-      </th>
-    `;
+    ths += `<th>${epEsc(p.name)}</th>`;
   });
 
   const rows = [
     { label: "Target Pledge", key: (p) => `${epCompFormat(p.target, p.unit)} ${epCompShortUnit(p.unit)}` },
-    { label: "Current Progress", key: (p) => `${epCompFormat(p.verified, p.unit)} ${epCompShortUnit(p.unit)} (${p.progressPercent}%)` },
-    { label: "Progress Score", key: (p) => `<strong>${p.progressScore}/100</strong>` },
-    { label: "Evidence Score", key: (p) => `<strong>${p.evidenceScore}/100</strong>` },
-    { label: "Consistency Score", key: (p) => `<strong>${p.consistencyScore}/100</strong>` },
+    { label: "Current Progress", key: (p) => `${epCompFormat(p.verified, p.unit)} ${epCompShortUnit(p.unit)} (${p.progressPercent || 0}%)` },
+    { label: "Progress Score", key: (p) => `<strong>${p.progressScore !== "N/A" ? p.progressScore + "/50" : "N/A"}</strong>` },
+    { label: "Risk Score", key: (p) => `<strong>${p.evidenceScore !== "N/A" ? p.evidenceScore + "/25" : "N/A"}</strong>` },
+    { label: "Consistency Score", key: (p) => `<strong>${p.consistencyScore !== "N/A" ? p.consistencyScore + "/25" : "N/A"}</strong>` },
     { 
       label: "Risk Level", 
       key: (p) => p.riskLevel === "High" 
         ? `<span class="ep-badge ep-badge-failed">High Risk</span>` 
-        : `<span class="ep-badge ep-badge-verified">Low Risk</span>` 
+        : (p.riskLevel === "Low"
+          ? `<span class="ep-badge ep-badge-verified">Low Risk</span>`
+          : `<span class="ep-badge ep-badge-pending">${p.riskLevel || 'Pending Data'}</span>`)
     },
     { 
       label: "Outcome Prediction", 
       key: (p) => p.outcomePrediction === "On Track" 
         ? `<span class="ep-badge ep-badge-verified">On Track</span>` 
-        : `<span class="ep-badge ep-badge-review">At Risk</span>` 
+        : (p.outcomePrediction === "At Risk" || p.outcomePrediction === "Off Track"
+          ? `<span class="ep-badge ep-badge-review">${p.outcomePrediction}</span>`
+          : `<span class="ep-badge ep-badge-pending">${p.outcomePrediction || 'Pending Data'}</span>`)
     },
     { 
       label: "Overall EcoLens Score", 
-      key: (p) => `<span style="font-size:1.15rem; font-weight:800; color:var(--green-900);">${p.ecoLensScore}</span><span style="font-size:0.8rem; color:var(--ink-faint);">/100</span>` 
+      key: (p) => p.ecoLensScore !== "N/A"
+        ? `<span style="font-size:1.15rem; font-weight:800; color:var(--green-900);">${p.ecoLensScore}</span><span style="font-size:0.8rem; color:var(--ink-faint);">/100</span>`
+        : `<span style="font-size:0.95rem; font-weight:700; color:var(--ink-soft);">N/A</span>`
     },
     {
       label: "Action",
@@ -215,7 +266,8 @@ function epRenderComparisonTable() {
 
 /* ---------- Detailed Project Evaluation ---------- */
 async function epSelectCompanyProject(projectId, scroll = false) {
-  epSelectedCompanyProjectId = projectId;
+  if (!projectId) return;
+  epSelectedCompanyProjectId = String(projectId);
 
   // Highlight card
   document.querySelectorAll(".proj-card").forEach(c => c.classList.remove("selected-card"));
@@ -230,28 +282,33 @@ async function epSelectCompanyProject(projectId, scroll = false) {
     if (nameEl) nameEl.textContent = p.name;
     const metaEl = document.getElementById("eval-project-meta");
     if (metaEl) {
-      metaEl.textContent = `${p.projectType} \u00b7 ${p.displayLocation} \u00b7 Target: ${epCompFormat(p.target, p.unit)} ${p.unit} \u00b7 Timeline: ${p.timeline}`;
+      metaEl.textContent = `${p.projectType || p.kind || 'Environmental'} \u00b7 ${p.displayLocation || 'Site'} \u00b7 Target: ${epCompFormat(p.target || 0, p.unit)} ${p.unit} \u00b7 Timeline: ${p.timeline || `${p.durationMonths || 12} months`}`;
     }
 
     // Score Breakdown
     const scoreGrid = document.getElementById("eval-score-grid");
     if (scoreGrid) {
+      const pScoreStr = p.progressScore !== "N/A" ? `${p.progressScore}<span style="font-size:0.9rem; color:var(--ink-faint);">/50</span>` : "N/A";
+      const eScoreStr = p.evidenceScore !== "N/A" ? `${p.evidenceScore}<span style="font-size:0.9rem; color:var(--ink-faint);">/25</span>` : "N/A";
+      const cScoreStr = p.consistencyScore !== "N/A" ? `${p.consistencyScore}<span style="font-size:0.9rem; color:var(--ink-faint);">/25</span>` : "N/A";
+      const oScoreStr = p.ecoLensScore !== "N/A" ? `${p.ecoLensScore}<span style="font-size:0.9rem; color:var(--green-900);">/100</span>` : "N/A";
+
       scoreGrid.innerHTML = `
         <div class="score-tile">
-          <div class="score-tile-val">${p.progressScore}<span style="font-size:0.9rem; color:var(--ink-faint);">/100</span></div>
-          <div class="score-tile-label">Progress Score</div>
+          <div class="score-tile-val">${pScoreStr}</div>
+          <div class="score-tile-label">Progress Score (/50)</div>
         </div>
         <div class="score-tile">
-          <div class="score-tile-val">${p.evidenceScore}<span style="font-size:0.9rem; color:var(--ink-faint);">/100</span></div>
-          <div class="score-tile-label">Evidence Score</div>
+          <div class="score-tile-val">${eScoreStr}</div>
+          <div class="score-tile-label">Risk Score (/25)</div>
         </div>
         <div class="score-tile">
-          <div class="score-tile-val">${p.consistencyScore}<span style="font-size:0.9rem; color:var(--ink-faint);">/100</span></div>
-          <div class="score-tile-label">Consistency Score</div>
+          <div class="score-tile-val">${cScoreStr}</div>
+          <div class="score-tile-label">Consistency Score (/25)</div>
         </div>
         <div class="score-tile" style="border: 2px solid var(--green-600); background:var(--green-100);">
-          <div class="score-tile-val score-highlight">${p.ecoLensScore}<span style="font-size:0.9rem; color:var(--green-900);">/100</span></div>
-          <div class="score-tile-label" style="color:var(--green-900);">Overall EcoLens Score</div>
+          <div class="score-tile-val score-highlight">${oScoreStr}</div>
+          <div class="score-tile-label" style="color:var(--green-900);">Overall EcoLens Score (/100)</div>
         </div>
       `;
     }
@@ -259,31 +316,41 @@ async function epSelectCompanyProject(projectId, scroll = false) {
     // Key Risk & Prediction Callouts
     const calloutEl = document.getElementById("eval-callout-banner");
     if (calloutEl) {
-      calloutEl.className = `ep-banner ep-banner-${p.status.cls}`;
-      calloutEl.innerHTML = p.outcomePrediction === "On Track"
-        ? `<strong>Outcome Prediction: ON TRACK.</strong> The verified progress trajectory indicates consistent milestone fulfillment with low delivery risk.`
-        : `<strong>Outcome Prediction: AT RISK.</strong> Reality gap detected (${epCompFormat(Math.abs(p.gap), p.unit)} ${epCompShortUnit(p.unit)}). Linear trend indicates potential deadline shortfall.`;
+      calloutEl.className = `ep-banner ep-banner-${p.status ? p.status.cls : 'ok'}`;
+      const ahead = (p.gap || 0) <= 0;
+      if (ahead) {
+        calloutEl.innerHTML = `<strong>Schedule Trajectory: ON TRACK.</strong> The recorded progress trajectory indicates milestone fulfillment on or ahead of schedule.`;
+      } else {
+        const shortfall = (p.forecast && p.forecast.predictedFinal < (p.target || 0))
+          ? (p.target - p.forecast.predictedFinal)
+          : 0;
+        if (shortfall > 0) {
+          calloutEl.innerHTML = `<strong>Schedule Trajectory: ${p.status ? p.status.label : 'OFF TRACK'}.</strong> Reality gap of ${epCompFormat(Math.abs(p.gap || 0), p.unit)} ${epCompShortUnit(p.unit)} detected. Trend forecast indicates a potential deadline shortfall of ~${epCompFormat(shortfall, p.unit)} ${epCompShortUnit(p.unit)}.`;
+        } else {
+          calloutEl.innerHTML = `<strong>Schedule Trajectory: ${p.status ? p.status.label : 'OFF TRACK'} (Milestone Gap).</strong> Current progress trails the expected milestone by ${epCompFormat(Math.abs(p.gap || 0), p.unit)} ${epCompShortUnit(p.unit)}, but linear rate projection indicates potential deadline fulfillment (~${epCompFormat(p.forecast ? p.forecast.predictedFinal : p.target, p.unit)} ${epCompShortUnit(p.unit)}).`;
+        }
+      }
     }
 
     // Reality Gap metric tiles
     const gapTiles = document.getElementById("eval-reality-tiles");
     if (gapTiles) {
-      const ahead = p.gap <= 0;
+      const ahead = (p.gap || 0) <= 0;
       gapTiles.innerHTML = `
         <div class="ep-tile">
-          <div class="ep-tile-num">${epCompFormat(p.expected, p.unit)}</div>
+          <div class="ep-tile-num">${epCompFormat(p.expected || 0, p.unit)}</div>
           <div class="ep-tile-label">Expected Progress to Date</div>
         </div>
         <div class="ep-tile">
-          <div class="ep-tile-num">${epCompFormat(p.verified, p.unit)}</div>
-          <div class="ep-tile-label">Actual Verified Progress (${p.progressPercent}%)</div>
+          <div class="ep-tile-num">${epCompFormat(p.verified || 0, p.unit)}</div>
+          <div class="ep-tile-label">Actual Recorded Progress (${p.progressPercent || 0}%)</div>
         </div>
         <div class="ep-tile ep-tile-${ahead ? 'ok' : 'bad'}">
-          <div class="ep-tile-num">${ahead ? '+' : ''}${epCompFormat(Math.abs(p.gap), p.unit)}</div>
+          <div class="ep-tile-num">${ahead ? '+' : ''}${epCompFormat(Math.abs(p.gap || 0), p.unit)}</div>
           <div class="ep-tile-label">Reality Gap (Expected vs Actual)</div>
         </div>
         <div class="ep-tile">
-          <div class="ep-tile-num">~${epCompFormat(p.forecast.predictedFinal, p.unit)}</div>
+          <div class="ep-tile-num">~${epCompFormat(p.forecast ? p.forecast.predictedFinal : (p.target || 0), p.unit)}</div>
           <div class="ep-tile-label">Predicted Final Outcome</div>
         </div>
       `;
@@ -305,7 +372,7 @@ async function epSelectCompanyProject(projectId, scroll = false) {
             <div class="proj-metric-row"><span>Photo Relevance</span><strong>${ev.photoRelevance || 'Verified'}</strong></div>
             <div class="proj-metric-row"><span>Duplicate Detection</span><strong>${ev.duplicateDetection || 'Passed'}</strong></div>
             <div class="proj-metric-row"><span>Location Consistency</span><strong>${ev.locationConsistency || 'Consistent'}</strong></div>
-            <div class="proj-metric-row"><span>Evidence Confidence</span><strong style="color:var(--green-900);">${ev.evidenceConfidence || '90%'}</strong></div>
+            <div class="proj-metric-row"><span>Evidence Confidence</span><strong style="color:var(--green-900);">${ev.evidenceConfidence || 'Pending Data'}</strong></div>
           </div>
         </div>
 
@@ -315,10 +382,10 @@ async function epSelectCompanyProject(projectId, scroll = false) {
             Risk Analysis
           </h4>
           <div style="font-size:0.9rem; line-height:1.7;">
-            <div class="proj-metric-row"><span>Current Risk Level</span><strong><span class="ep-badge ${p.riskLevel === 'High' ? 'ep-badge-failed' : 'ep-badge-verified'}">${p.riskLevel}</span></strong></div>
+            <div class="proj-metric-row"><span>Current Risk Level</span><strong><span class="ep-badge ${p.riskLevel === 'High' ? 'ep-badge-failed' : 'ep-badge-verified'}">${p.riskLevel || 'Pending Data'}</span></strong></div>
             <div class="proj-metric-row"><span>Progress Anomaly</span><strong>${rk.progressAnomaly || 'Normal'}</strong></div>
             <div class="proj-metric-row"><span>Timeline Risk</span><strong>${rk.timelineRisk || 'Low'}</strong></div>
-            <div class="proj-metric-row"><span>Predicted Outcome</span><strong style="color:var(--${p.outcomePrediction === 'On Track' ? 'green-900' : 'red-600'});">${p.outcomePrediction}</strong></div>
+            <div class="proj-metric-row"><span>Predicted Outcome</span><strong style="color:var(--${p.outcomePrediction === 'On Track' ? 'green-900' : 'red-600'});">${p.outcomePrediction || 'Pending Data'}</strong></div>
           </div>
         </div>
       `;
@@ -346,17 +413,19 @@ function epRenderCompanyChart(p) {
   if (!canvas || typeof Chart === "undefined") return;
 
   try {
+    const duration = p.durationMonths || 12;
     const labels = [];
-    for (let m = 0; m <= p.durationMonths; m++) labels.push(m);
+    for (let m = 0; m <= duration; m++) labels.push(m);
 
-    const promise = labels.map((m) => (p.target * m) / p.durationMonths);
+    const promise = labels.map((m) => (p.target * m) / duration);
+    const cumVerified = p.cumVerified || [];
     const verified = labels.map((m) => {
-      const hit = p.cumVerified.find((c) => c[0] === m);
+      const hit = cumVerified.find((c) => c[0] === m);
       return hit ? hit[1] : null;
     });
 
-    const f = p.forecast;
-    const fs = f.forecastSeries;
+    const f = p.forecast || { predictedFinal: p.target || 0, forecastSeries: [[1, 0], [duration, p.target || 0]] };
+    const fs = f.forecastSeries && f.forecastSeries.length ? f.forecastSeries : [[1, 0], [duration, f.predictedFinal]];
     const fromM = fs[0][0], fromV = fs[0][1], toM = fs[fs.length - 1][0];
     const forecast = [{ x: fromM, y: fromV }, { x: toM, y: f.predictedFinal }];
 
@@ -375,7 +444,7 @@ function epRenderCompanyChart(p) {
             tension: 0
           },
           {
-            label: "Actual Verified Progress",
+            label: "Actual Recorded Progress",
             data: verified,
             borderColor: "#16a34a",
             backgroundColor: "#16a34a",
@@ -410,7 +479,7 @@ function epRenderCompanyChart(p) {
         },
         scales: {
           x: { title: { display: true, text: "Month of Commitment" }, ticks: { maxTicksLimit: 13 } },
-          y: { title: { display: true, text: p.unit }, beginAtZero: true }
+          y: { title: { display: true, text: epCompShortUnit(p.unit) || "units" }, beginAtZero: true }
         }
       }
     };
@@ -427,7 +496,7 @@ function epUpdateShortlistButton() {
   const btn = document.getElementById("btn-shortlist-project");
   if (!btn) return;
 
-  const isShortlisted = epShortlistedProjects.has(epSelectedCompanyProjectId);
+  const isShortlisted = epShortlistedProjects.has(String(epSelectedCompanyProjectId));
   if (isShortlisted) {
     btn.className = "btn btn-primary";
     btn.innerHTML = "\u2713 Shortlisted for Decision";
@@ -438,17 +507,17 @@ function epUpdateShortlistButton() {
 }
 
 function epToggleShortlist() {
-  const btn = document.getElementById("btn-shortlist-project");
   const notificationArea = document.getElementById("decision-feedback");
+  const pIdStr = String(epSelectedCompanyProjectId);
 
-  if (epShortlistedProjects.has(epSelectedCompanyProjectId)) {
-    epShortlistedProjects.delete(epSelectedCompanyProjectId);
+  if (epShortlistedProjects.has(pIdStr)) {
+    epShortlistedProjects.delete(pIdStr);
     if (notificationArea) {
       notificationArea.innerHTML = `<div class="ep-upload-error" style="background:#f2f4f1; color:var(--ink-soft); border:1px solid var(--line);">Project removed from candidate shortlist.</div>`;
     }
   } else {
-    epShortlistedProjects.add(epSelectedCompanyProjectId);
-    const p = epCompanyProjects.find(x => x.id === epSelectedCompanyProjectId);
+    epShortlistedProjects.add(pIdStr);
+    const p = epCompanyProjects.find(x => String(x.id) === pIdStr);
     if (notificationArea) {
       notificationArea.innerHTML = `
         <div class="ep-success-banner">
@@ -468,20 +537,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!container) return;
 
   try {
+    let dashboardStats = null;
+    try {
+      dashboardStats = await EcoLensAPI.getCompanyDashboard();
+    } catch (dErr) {
+      console.warn("Company dashboard summary fetch notice:", dErr.message);
+    }
+
     epCompanyProjects = await EcoLensAPI.getCompanyProjects();
 
-    epRenderCompanySummary(epCompanyProjects);
+    // Default compared set to first 3 projects if available
+    if (epCompanyProjects.length > 0) {
+      epCompanyProjects.forEach(p => epComparedProjects.add(String(p.id)));
+    }
+
+    epRenderCompanySummary(epCompanyProjects, dashboardStats);
     epRenderCompanyCards(epCompanyProjects);
-    epRenderComparisonTable();
+    await epRenderComparisonTable();
 
     // Check for query param ?project=
     const params = new URLSearchParams(window.location.search);
     const initialProject = params.get("project");
-    if (initialProject && epCompanyProjects.some(p => p.id === initialProject)) {
-      epSelectedCompanyProjectId = initialProject;
+    if (initialProject && epCompanyProjects.some(p => String(p.id) === String(initialProject))) {
+      epSelectedCompanyProjectId = String(initialProject);
+    } else if (epCompanyProjects.length > 0) {
+      epSelectedCompanyProjectId = String(epCompanyProjects[0].id);
     }
 
-    if (epCompanyProjects.length > 0) {
+    if (epSelectedCompanyProjectId) {
       await epSelectCompanyProject(epSelectedCompanyProjectId, Boolean(initialProject));
     }
 

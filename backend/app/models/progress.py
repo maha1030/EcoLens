@@ -27,6 +27,16 @@ class ProgressUpdate(Base):
         nullable=True
     )
 
+    latitude = Column(
+        Float,
+        nullable=True
+    )
+
+    longitude = Column(
+        Float,
+        nullable=True
+    )
+
     created_at = Column(
         DateTime(timezone=True),
         server_default=func.now()

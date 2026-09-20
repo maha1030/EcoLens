@@ -27,12 +27,29 @@ const EP_CHIP = {
   na: { cls: "chip-na", word: "N/A" }
 };
 
-const EP_CHECK_LABELS = {
-  relevance: "Photo relevance",
-  duplicate: "Duplicate photo",
-  gps: "GPS cross-check",
-  plausibility: "Growth plausibility"
-};
+if (typeof window !== "undefined" && typeof window.EP_CHECK_LABELS === "undefined") {
+  window.EP_CHECK_LABELS = (typeof EP_CHECK_LABELS !== "undefined")
+    ? EP_CHECK_LABELS
+    : {
+        relevance: "Photo relevance",
+        duplicate: "Duplicate photo",
+        gps: "GPS cross-check",
+        plausibility: "Growth plausibility"
+      };
+}
+
+function epEsc(str) {
+  if (typeof EcoLensUI !== "undefined" && EcoLensUI.escapeHtml) {
+    return EcoLensUI.escapeHtml(str);
+  }
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 let epChart = null;
 let epActiveId = null;
@@ -108,21 +125,22 @@ function epRenderCards(projects) {
     const verified = p.verified;
     const expected = p.expected;
     const card = document.createElement("button");
-    card.className = "ep-card" + (p.id === epActiveId ? " ep-card-active" : "");
-    card.setAttribute("aria-pressed", p.id === epActiveId ? "true" : "false");
+    const isActive = String(p.id) === String(epActiveId);
+    card.className = "ep-card" + (isActive ? " ep-card-active" : "");
+    card.setAttribute("aria-pressed", isActive ? "true" : "false");
     card.innerHTML = `
       <div class="ep-card-top">
-        <span class="ep-card-name">${p.name}</span>
+        <span class="ep-card-name">${epEsc(p.name)}</span>
         <span class="ep-status ${st.cls}">${st.label}</span>
       </div>
-      <div class="ep-card-org">${p.org}</div>
+      <div class="ep-card-org">${epEsc(p.org)}</div>
       <div class="ep-card-bar">
         <div class="ep-card-fill" style="width:${Math.min(100, (verified / p.target) * 100)}%"></div>
         <div class="ep-card-tick" style="left:${Math.min(100, (expected / p.target) * 100)}%" title="Expected by now"></div>
       </div>
       <div class="ep-card-meta">
         <span><strong>${epFmt(p, verified)}</strong> / ${epFmt(p, p.target)} ${epShortUnit(p)}</span>
-        <span>trust ${p.trust}%</span>
+        <span>${typeof p.trust === "number" ? `Evidence trust: ${p.trust}%` : "Evidence trust: Pending"}</span>
       </div>`;
     card.addEventListener("click", () => epSelect(p.id));
     wrap.appendChild(card);
@@ -159,19 +177,22 @@ function epRenderDetail(p) {
 
   title.textContent = p.name;
   document.getElementById("ep-detail-site").textContent =
-    `${p.org} \u00b7 ${p.site.name} \u00b7 promise: ${epFmt(p, p.target)} ${p.unit} in ${p.durationMonths} months (deadline ${p.deadline})`;
+    `${p.org} \u00b7 ${p.site ? p.site.name : 'Site'} \u00b7 promise: ${epFmt(p, p.target)} ${p.unit} in ${p.durationMonths} months (deadline ${p.deadline})`;
 
+  const shortfall = (f && f.predictedFinal < p.target) ? (p.target - f.predictedFinal) : 0;
   const banner = document.getElementById("ep-banner");
   banner.className = "ep-banner ep-banner-" + st.cls;
   banner.innerHTML = st.label === "ON TRACK"
     ? `<strong>Projected to finish at ~${epFmt(p, f.predictedFinal)} ${epShortUnit(p)}</strong> against a promise of ${epFmt(p, p.target)} ${epShortUnit(p)}. ${ahead ? "Ahead of the promised trajectory." : "On the promised trajectory."}`
-    : `<strong>${st.label}:</strong> the verified trend projects ~${epFmt(p, f.predictedFinal)} ${epShortUnit(p)} by the deadline, a shortfall of ~${epFmt(p, p.target - f.predictedFinal)} ${epShortUnit(p)} against the promise of ${epFmt(p, p.target)}.`;
+    : (shortfall > 0
+      ? `<strong>${st.label}:</strong> the verified trend projects ~${epFmt(p, f.predictedFinal)} ${epShortUnit(p)} by the deadline, a shortfall of ~${epFmt(p, shortfall)} ${epShortUnit(p)} against the promise of ${epFmt(p, p.target)}.`
+      : `<strong>${st.label}:</strong> current progress trails the scheduled milestone, but the projected trend reaches the promised target of ${epFmt(p, p.target)} ${epShortUnit(p)} by the deadline.`);
 
   const tiles = document.getElementById("ep-tiles");
   const lastMonth = p.updates[p.updates.length - 1].month;
   tiles.innerHTML = `
     <div class="ep-tile"><div class="ep-tile-num">${epFmt(p, verified)}</div>
-      <div class="ep-tile-label">verified ${epShortUnit(p)} to date (month ${lastMonth})</div></div>
+      <div class="ep-tile-label">recorded ${epShortUnit(p)} to date (month ${lastMonth})</div></div>
     <div class="ep-tile"><div class="ep-tile-num">${epFmt(p, expected)}</div>
       <div class="ep-tile-label">expected by now on the promised line</div></div>
     <div class="ep-tile ep-tile-${ahead ? "ok" : "bad"}"><div class="ep-tile-num">${ahead ? "+" : ""}${epFmt(p, Math.abs(gap))}</div>
@@ -264,12 +285,29 @@ function epRenderFeed(p) {
   wrap.innerHTML = "";
 
   const updates = [...p.updates].reverse(); // newest first
-  const flagged = updates.find(u => u.confidence < 50 || (u.checks && (u.checks.duplicate?.status === "fail" || u.checks.plausibility?.status === "fail")));
+  const flagged = updates.find(u => u.checks && Object.values(u.checks).some(c => c && c.status === "fail"));
 
   // Prominent flagged evidence highlight section
   if (flagged) {
     const flaggedEl = document.createElement("div");
     flaggedEl.className = "ep-flagged-card";
+    const failedChecks = Object.entries(flagged.checks || {}).filter(([k, v]) => v && v.status === "fail");
+    const flaggedChips = failedChecks.map(([k, v]) => `
+      <span class="ep-chip chip-fail">${EP_CHECK_LABELS[k]}: FLAGGED</span>
+    `).join("") + `<span class="ep-chip chip-fail">Confidence: ${flagged.confidence}%</span>`;
+
+    const flaggedMsg = failedChecks.map(([k, v]) => v.detail).join(". ") || "Evidence anomaly detected.";
+
+    const flaggedPhotoHtml = flagged.photo ? `
+      <a href="${flagged.photo}" target="_blank" rel="noopener">
+        <img src="${flagged.photo}" alt="Flagged evidence photo, month ${flagged.month}">
+      </a>
+    ` : `
+      <div style="width:100px; height:74px; background:#fee2e2; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#991b1b; font-size:0.72rem; text-align:center; padding:4px;">
+        No photo
+      </div>
+    `;
+
     flaggedEl.innerHTML = `
       <div class="ep-flagged-header">
         <span class="ep-badge ep-badge-failed">FLAGGED EVIDENCE</span>
@@ -277,22 +315,19 @@ function epRenderFeed(p) {
       </div>
       <div class="ep-flagged-grid">
         <div class="ep-flagged-thumb">
-          <a href="${flagged.photo}" target="_blank" rel="noopener">
-            <img src="${flagged.photo}" alt="Flagged evidence photo, month ${flagged.month}">
-          </a>
+          ${flaggedPhotoHtml}
         </div>
         <div class="ep-flagged-info">
           <div class="ep-flagged-chips">
-            <span class="ep-chip chip-fail">Duplicate Photo: FLAGGED</span>
-            <span class="ep-chip chip-fail">Growth Plausibility: FLAGGED</span>
-            <span class="ep-chip chip-fail">Confidence: ${flagged.confidence}%</span>
+            ${flaggedChips}
           </div>
-          <p class="ep-flagged-msg">Potential duplicate evidence and an unusual progress claim were detected.</p>
+          <p class="ep-flagged-msg">${flaggedMsg}</p>
           <details class="ep-feed-detail">
             <summary>Show Technical Details</summary>
-            <div class="ep-feed-detail-line"><strong>Duplicate Photo (flag):</strong> ${flagged.checks?.duplicate?.detail || "Hamming distance 0/64 to earlier update."}</div>
-            <div class="ep-feed-detail-line"><strong>Growth Plausibility (flag):</strong> ${flagged.checks?.plausibility?.detail || "Implausible increment."}</div>
-            <div class="ep-feed-detail-line"><strong>GPS Cross-Check:</strong> ${flagged.checks?.gps?.detail || "Location verified."}</div>
+            ${Object.entries(flagged.checks || {}).map(([k, c]) => {
+              const word = (EP_CHIP[c.status] || EP_CHIP.na).word.toLowerCase();
+              return `<div class="ep-feed-detail-line"><strong>${EP_CHECK_LABELS[k]} (${word}):</strong> ${c.detail}</div>`;
+            }).join("")}
           </details>
         </div>
       </div>`;
@@ -313,6 +348,8 @@ function epRenderFeed(p) {
   function createUpdateRow(u) {
     const isLatest = updates.length > 0 && u.month === updates[0].month;
     const checks = u.checks || {};
+    const isFlaggedRow = Object.values(checks).some(c => c && c.status === "fail");
+
     const chips = ["relevance", "duplicate", "gps", "plausibility"].map((k) => {
       const c = checks[k] || { status: "na", short: "n/a", detail: "N/A" };
       const chip = EP_CHIP[c.status] || EP_CHIP.na;
@@ -326,22 +363,30 @@ function epRenderFeed(p) {
       return `<div class="ep-feed-detail-line"><strong>${EP_CHECK_LABELS[k]} (${word}):</strong> ${c.detail}</div>`;
     }).join("");
 
-    const el = document.createElement("article");
-    el.className = "ep-feed-item" + (u.confidence < 50 ? " ep-feed-flagged" : "") + (isLatest ? " ep-feed-latest" : "");
-    el.innerHTML = `
+    const photoHtml = u.photo ? `
       <a class="ep-feed-photo" href="${u.photo}" target="_blank" rel="noopener">
         <img src="${u.photo}" alt="Evidence photo, month ${u.month}" loading="lazy">
       </a>
+    ` : `
+      <div class="ep-feed-photo" style="display:flex; align-items:center; justify-content:center; background:var(--surface-muted, #f1f5f9); color:var(--ink-soft, #64748b); font-size:0.75rem; text-align:center; padding:8px; border-radius:8px; border:1px dashed var(--line, #cbd5e1);">
+        No photo
+      </div>
+    `;
+
+    const el = document.createElement("article");
+    el.className = "ep-feed-item" + (isFlaggedRow ? " ep-feed-flagged" : "") + (isLatest ? " ep-feed-latest" : "");
+    el.innerHTML = `
+      ${photoHtml}
       <div class="ep-feed-body">
         <div class="ep-feed-head">
           <span class="ep-feed-month">
             ${isLatest ? '<span class="ep-badge ep-badge-verified" style="font-size:0.72rem; padding:2px 7px; margin-right:6px; font-weight:700;">LATEST SUBMISSION</span>' : ''}
             Month ${u.month} update <span class="ep-feed-date">\u00b7 ${u.date}</span>
           </span>
-          <span class="ep-feed-counts">claimed <strong>${epFmt(p, u.claimed)}</strong> \u00b7 counted <strong>${epFmt(p, u.verified)}</strong> ${epShortUnit(p)}</span>
+          <span class="ep-feed-counts">claimed <strong>${epFmt(p, u.claimed)}</strong> \u00b7 recorded <strong>${epFmt(p, u.verified)}</strong> ${epShortUnit(p)}</span>
         </div>
         <div class="ep-feed-chips">${chips}</div>
-        ${u.note ? `<div class="ep-feed-note">${u.note}</div>` : ""}
+        ${u.note ? `<div class="ep-feed-note">${epEsc(u.note)}</div>` : ""}
         <details class="ep-feed-detail"><summary>Show Technical Details</summary>${details}</details>
       </div>
       <div class="ep-feed-conf ep-conf-${confCls}">
